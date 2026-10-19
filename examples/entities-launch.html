@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/data.js"></script>
+    <style>
+      @font-face { font-family: "Aeonik"; font-weight: 400; src: url("assets/fonts/aeonikpro-regular.otf") format("opentype"); }
+      @font-face { font-family: "Aeonik"; font-weight: 500; src: url("assets/fonts/aeonikpro-medium.otf") format("opentype"); }
+      :root { --night: #050607; --ink: #f3f5f4; --dim: rgba(243,245,244,0.50); --sky: #8ec5ff; --rose: #ff7a9c; --edge: rgba(255,255,255,0.16); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--night); }
+      body { font-family: "Aeonik", sans-serif; font-weight: 400; color: var(--ink); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--night); }
+      .fill { position: absolute; inset: 0; }
+      #bg canvas { width: 1920px; height: 1080px; display: block; transform-origin: 50% 50%; }
+      #vignette { background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%); pointer-events: none; }
+      #grain { background-image: url("assets/grain.png"); background-size: 512px 512px; mix-blend-mode: overlay; opacity: 0.24; pointer-events: none; }
+      #stage { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+      .scene { position: absolute; inset: 0; }
+      #brand { position: absolute; left: 72px; top: 58px; width: 190px; height: auto; display: block; opacity: 0; }
+
+      /* masked line / word reveals */
+      .mw { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.2em; margin-bottom: -0.2em; }
+      .mi { display: inline-block; white-space: pre; will-change: transform; }
+
+      /* ---- scene 1: the problem ---- */
+      #s1 { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding-left: 190px; }
+      #s1 .ln { font-size: 82px; line-height: 1.22; letter-spacing: -0.03em; white-space: nowrap; }
+      .ent { position: relative; display: inline-block; vertical-align: top; overflow: hidden; padding-bottom: 0.2em; margin-bottom: -0.2em; }
+      .ent .good, .ent .bad { display: inline-block; white-space: pre; }
+      .ent .bad { position: absolute; left: 0; top: 0; color: var(--rose); font-weight: 500; }
+      .ent .ul { position: absolute; left: 0; right: 0; bottom: 0.2em; height: 3px; background: var(--rose); transform-origin: left center; transform: scaleX(0); }
+      .tg { position: absolute; font-weight: 500; font-size: 20px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--rose); white-space: nowrap; opacity: 0; }
+      #drop { margin-top: 44px; display: flex; align-items: center; gap: 16px; font-weight: 500; font-size: 26px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--rose); opacity: 0; }
+      #drop svg { width: 26px; height: 26px; }
+
+      /* ---- scene 2: introducing ---- */
+      #s2 { position: absolute; inset: 0; }
+      .c2 { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; }
+      #i0 { top: 330px; font-size: 64px; letter-spacing: -0.02em; color: var(--dim); }
+      #i1 { top: 410px; font-size: 168px; font-weight: 500; letter-spacing: -0.045em; line-height: 1.1; color: var(--sky); }
+      #e-a, #e-b { top: 470px; font-size: 92px; letter-spacing: -0.03em; line-height: 1.1; }
+      #e-c { top: 440px; font-size: 250px; font-weight: 500; letter-spacing: -0.045em; line-height: 1.0; color: var(--sky); }
+
+      /* ---- scene 3: the four kinds of entity ---- */
+      #s3 { position: absolute; inset: 0; }
+      .row { position: absolute; left: 190px; right: 190px; height: 150px; display: flex; align-items: center; }
+      .row .lb { width: 400px; font-weight: 500; font-size: 24px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--sky); }
+      .row .ws { display: flex; gap: 70px; font-size: 104px; font-weight: 500; letter-spacing: -0.04em; white-space: nowrap; }
+      .row .hl { position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: rgba(255,255,255,0.18); transform-origin: left center; transform: scaleX(0); }
+      #close { position: absolute; left: 190px; top: 868px; font-size: 56px; letter-spacing: -0.025em; white-space: nowrap; }
+      #close .w { color: var(--dim); }
+
+      /* ---- scene 4: pronunciation dictionary ---- */
+      #s4 { display: flex; align-items: center; justify-content: center; }
+      .card { position: relative; width: 1280px; padding: 52px 60px 56px; border-radius: 30px; border: 1.5px solid var(--edge); display: flex; flex-direction: column; gap: 22px;
+              background: linear-gradient(160deg, rgba(14,20,40,0.62), rgba(8,12,26,0.5)); backdrop-filter: blur(26px); box-shadow: 0 40px 100px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.10); }
+      .lab { display: flex; align-items: center; gap: 14px; font-weight: 500; font-size: 28px; line-height: 1; color: var(--dim); }
+      .lab::after { content: ""; flex: 1; height: 1.5px; background: currentColor; opacity: 0.28; }
+      .lab svg { width: 28px; height: 28px; }
+      .dict { display: flex; flex-direction: column; gap: 14px; }
+      .entry { display: flex; align-items: center; gap: 22px; padding: 18px 26px; border-radius: 16px; background: rgba(6,10,30,0.4); border: 1.2px solid rgba(255,255,255,0.16); }
+      .entry .word { font-weight: 500; font-size: 44px; width: 300px; letter-spacing: -0.01em; }
+      .entry .arrow { width: 30px; opacity: 0.6; }
+      .entry .ph { font-size: 44px; color: var(--sky); flex: 1; }
+      .entry .saved { font-weight: 500; font-size: 26px; color: var(--sky); display: inline-flex; gap: 10px; align-items: center; opacity: 0; }
+      .btn { align-self: flex-end; padding: 14px 36px; border-radius: 14px; background: var(--ink); color: #0b0d0c; font-weight: 500; font-size: 30px; }
+      .calls { display: flex; gap: 34px; }
+      .calls .c { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 28px; color: var(--sky); opacity: 0; }
+      .calls svg { width: 26px; height: 26px; }
+
+      /* ---- scene 5: call to action ---- */
+      #s5 { position: absolute; inset: 0; }
+      #f1 { top: 370px; font-size: 92px; letter-spacing: -0.03em; }
+      #f2 { top: 480px; font-size: 168px; font-weight: 500; letter-spacing: -0.045em; line-height: 1.1; color: var(--sky); }
+      #endlogo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+      #endlogo img { width: 720px; display: block; }
+
+      /* narrator voice line */
+      #voice { position: absolute; left: 0; right: 0; bottom: 62px; height: 64px; display: flex; justify-content: center; align-items: center; gap: 6px; opacity: 0; }
+      #voice i { display: block; width: 4px; border-radius: 2px; background: var(--sky); height: 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="38.5" data-width="1920" data-height="1080">
+
+      <audio id="an1" src="assets/audio/trim/n1.wav" data-start="0.8"  data-duration="8.38" data-track-index="10" data-volume="1"></audio>
+      <audio id="an2" src="assets/audio/trim/n2.wav" data-start="10.4" data-duration="6.24" data-track-index="11" data-volume="1"></audio>
+      <audio id="an3" src="assets/audio/trim/n3.wav" data-start="17.3" data-duration="5.63" data-track-index="12" data-volume="1"></audio>
+      <audio id="an4" src="assets/audio/trim/n4.wav" data-start="23.4" data-duration="7.13" data-track-index="13" data-volume="1"></audio>
+      <audio id="an5" src="assets/audio/trim/n5.wav" data-start="30.9" data-duration="3.13" data-track-index="14" data-volume="1"></audio>
+
+      <div id="bg" class="fill clip" data-start="0" data-duration="38.5" data-track-index="0"><canvas id="mesh" width="960" height="540"></canvas></div>
+      <div id="vignette" class="fill clip" data-start="0" data-duration="38.5" data-track-index="1"></div>
+
+      <div id="stage" class="clip" data-start="0" data-duration="38.5" data-track-index="3">
+        <div id="s1" class="scene">
+          <div class="ln" id="l1"></div><div class="ln" id="l2"></div><div class="ln" id="l3"></div>
+          <div id="drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>Caller dropped off</div>
+        </div>
+        <div id="s2" class="scene">
+          <div id="i0" class="c2"></div><div id="i1" class="c2"></div>
+          <div id="e-a" class="c2"></div><div id="e-b" class="c2"></div><div id="e-c" class="c2"></div>
+        </div>
+        <div id="s3" class="scene"><div id="close"></div></div>
+        <div id="s4" class="scene">
+          <div class="card" id="card">
+            <div class="lab" id="dlab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z"/><path d="M5 17a3 3 0 013-3h11"/></svg>Pronunciation dictionary</div>
+            <div class="dict" id="dict"></div>
+            <div class="btn" id="btn">Save</div>
+            <div class="calls" id="calls"></div>
+          </div>
+        </div>
+        <div id="s5" class="scene"><div id="f1" class="c2"></div><div id="f2" class="c2"></div></div>
+      </div>
+
+      <div id="voice" class="clip" data-start="0" data-duration="38.5" data-track-index="4"></div>
+      <div id="grain" class="fill clip" data-start="0" data-duration="38.5" data-track-index="5"></div>
+      <img id="brand" class="clip" data-start="0" data-duration="34.4" data-track-index="6" src="assets/logo.png" alt="smallest.ai" />
+      <div id="endlogo" class="clip" data-start="0" data-duration="38.5" data-track-index="7"><img src="assets/logo.png" alt="smallest.ai" /></div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const TOTAL = 38.5, ND = window.N;
+      const NS = { n1: 0.8, n2: 10.4, n3: 17.3, n4: 23.4, n5: 30.9 };
+      const mk = (cls, text, tag) => { const e = document.createElement(tag || "span"); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+      const S2 = (t, f, ph) => Math.sin(2 * Math.PI * f * t + ph);
+
+      /* ---------- dark contour background ---------- */
+      const P = { t: 0, int: 0.0 };
+      const canvas = $("#mesh"), gl = canvas.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+      const VS = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
+      const FS = `precision highp float; uniform vec2 R; uniform float T; uniform float I;
+        vec3 ramp(float v){ vec3 k=vec3(0.02,0.025,0.03), navy=vec3(0.02,0.07,0.34), blue=vec3(0.07,0.30,0.88), sky=vec3(0.17,0.47,0.90), pale=vec3(0.42,0.70,1.0);
+          vec3 c=mix(k,navy,smoothstep(0.12,0.40,v)); c=mix(c,blue,smoothstep(0.34,0.50,v)); c=mix(c,sky,smoothstep(0.46,0.64,v)); c=mix(c,pale,smoothstep(0.92,1.0,v)); return c; }
+        void main(){ vec2 uv=gl_FragCoord.xy/R; vec2 p=(uv-0.5)*vec2(R.x/R.y,1.0)*3.4; float t=T*0.085;
+          for(int i=0;i<5;i++){ float fi=float(i); p+=0.62*vec2(sin(p.y*1.25+t*(1.0+fi*0.3)+fi*1.7),cos(p.x*1.1-t*(0.8+fi*0.25)+fi*2.3)); }
+          float a=0.5+0.5*sin(p.x*1.15+p.y*0.7+t*0.5), b=0.5+0.5*sin(length(p)*1.5-t); float v=smoothstep(0.12,0.88,0.55*a+0.45*b);
+          float rise=smoothstep(0.0,1.0,1.0-uv.y); v*=clamp(I*(0.62+0.55*rise),0.0,1.3);
+          gl_FragColor=vec4(ramp(clamp(v,0.0,1.0))*smoothstep(0.0,0.35,I),1.0); }`;
+      const sh = (ty, src) => { const s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+      const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const uR = gl.getUniformLocation(prog, "R"), uT = gl.getUniformLocation(prog, "T"), uI = gl.getUniformLocation(prog, "I");
+
+      /* ---------- narrator voice line ---------- */
+      const NV = 61, vbars = [], voice = $("#voice");
+      for (let i = 0; i < NV; i++) { const b = document.createElement("i"); voice.append(b); vbars.push(b); }
+      function drawVoice(t) {
+        let e = 0;
+        Object.keys(NS).forEach((k) => { const d = t - NS[k]; if (d >= 0 && d < ND[k].dur + 0.2) { const f = d * 30, i0 = Math.floor(f), i1 = i0 + 1, fr = f - i0, a = ND[k].env[i0] || 0, b = ND[k].env[i1] || a; e = a + (b - a) * fr; } });
+        vbars.forEach((b, i) => {
+          const c = (NV - 1) / 2, taper = Math.pow(Math.cos(((i - c) / c) * Math.PI / 2), 0.9), r = 0.55 + 0.45 * Math.abs(Math.sin(i * 1.7 + t * 9));
+          b.style.height = 4 + Math.pow(Math.min(1, e * 1.5), 0.8) * 52 * taper * r + "px"; b.style.opacity = 0.35 + 0.6 * Math.min(1, e * 1.6);
+        });
+      }
+      function drawCam(t) {                                 // slow, natural drift on the whole stage
+        const x = 7 * S2(t, 0.045, 0.4) + 3 * S2(t, 0.11, 1.9), y = 5 * S2(t, 0.037, 1.0) + 2 * S2(t, 0.09, 0.3), r = 0.14 * S2(t, 0.05, 0.8), sc = 1.0 + 0.045 * (t / TOTAL);
+        $("#stage").style.transform = "translate3d(" + x.toFixed(2) + "px," + y.toFixed(2) + "px,0) rotate(" + r.toFixed(3) + "deg) scale(" + sc.toFixed(4) + ")";
+        $("#mesh").style.transform = "translate3d(" + (-x * 1.6).toFixed(2) + "px," + (-y * 1.6).toFixed(2) + "px,0) scale(1.06)";
+      }
+      function draw() {
+        gl.viewport(0, 0, canvas.width, canvas.height); gl.uniform2f(uR, canvas.width, canvas.height); gl.uniform1f(uT, P.t); gl.uniform1f(uI, P.int);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); drawVoice(P.t); drawCam(P.t);
+      }
+      tl.to(P, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: draw }, 0);
+      tl.fromTo(P, { int: 0 }, { int: 0.42, duration: 4.0, ease: "power1.out", onUpdate: draw }, 0.2);
+      tl.to(P, { int: 0.6, duration: 2.6, ease: "sine.inOut", onUpdate: draw }, 8.8);
+      tl.to(P, { int: 0.76, duration: 3.0, ease: "sine.inOut", onUpdate: draw }, 15.0);
+      tl.to(P, { int: 0.6, duration: 3.0, ease: "sine.inOut", onUpdate: draw }, 22.6);
+      tl.to(P, { int: 0.82, duration: 3.0, ease: "sine.inOut", onUpdate: draw }, 30.0);
+      tl.to(P, { int: 0.0, duration: 1.4, ease: "power2.in", onUpdate: draw }, 34.2);
+      draw();
+
+      /* ---------- helpers: words rise out of masks ---------- */
+      function maskWords(host, text) {
+        return text.split(" ").map((w) => { const m = mk("mw"), i = mk("mi", w + " "); m.append(i); host.append(m); return i; });
+      }
+      const rise = (els, times, dur) => els.forEach((e, k) => tl.fromTo(e, { yPercent: 108 }, { yPercent: 0, duration: dur || 0.85, ease: "expo.out" }, Array.isArray(times) ? times[k] : times + k * 0.07));
+      const drop = (els, t, stag) => tl.to(els, { yPercent: -108, duration: 0.55, ease: "expo.in", stagger: stag === undefined ? 0.035 : stag }, t);
+
+      function build() {
+        tl.fromTo("#brand", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.9, ease: "expo.out" }, 0.9);
+        tl.to("#brand", { opacity: 0, duration: 0.5 }, 34.0);
+        tl.to("#voice", { opacity: 1, duration: 0.8 }, 0.9); tl.to("#voice", { opacity: 0, duration: 0.5 }, 33.9);
+
+        /* ---------- scene 1: names, brands, stock names and abbreviations, sounded out wrong ---------- */
+        const L1 = [["Hi ", ["Siobhan", "See-oh-ban", "name"], ", thanks for choosing"], ["", ["Hyundai", "Hy-un-dye", "brand"], ". Your ", ["Nvidia", "In-video", "stock"], " shares"], ["settled via ", ["NACH", "Natch", "abbreviation"], "."]];
+        const ents = [];
+        L1.forEach((parts, li) => {
+          const host = $("#l" + (li + 1)); host.style.overflow = "hidden"; host.style.paddingBottom = "0.2em";
+          const lineIn = mk("mi"); host.append(lineIn);
+          parts.forEach((p) => {
+            if (typeof p === "string") { lineIn.append(document.createTextNode(p)); return; }
+            const e = mk("ent"), g = mk("good", p[0]), b = mk("bad", p[1]), u = mk("ul"), t = mk("tg", p[2]);
+            e.append(g, b, u, t); lineIn.append(e); ents.push({ e, g, b, u, t });
+          });
+          tl.fromTo(lineIn, { yPercent: 108 }, { yPercent: 0, duration: 1.0, ease: "expo.out" }, 1.15 + li * 0.2);
+        });
+        // widths: wrong forms can be longer, keep neighbours still
+        ents.forEach((o) => { o.gw = o.g.getBoundingClientRect().width + 2; o.bw = o.b.getBoundingClientRect().width + 2; o.e.style.width = o.gw + "px"; o.t.style.left = "0px"; o.t.style.top = "-34px"; });
+        const MARK = [4.25, 4.67, 5.15, 6.11];                       // "names," "brands," "stock names," "abbreviations."
+        ents.forEach((o, i) => {
+          tl.to(o.g, { yPercent: -110, opacity: 0, duration: 0.4, ease: "power3.in" }, MARK[i]);
+          tl.to(o.e, { width: o.bw, duration: 0.7, ease: "expo.inOut" }, MARK[i]);
+          tl.fromTo(o.b, { yPercent: 110 }, { yPercent: 0, duration: 0.65, ease: "expo.out" }, MARK[i] + 0.3);
+          tl.to(o.u, { scaleX: 1, duration: 0.5, ease: "expo.out" }, MARK[i] + 0.25);
+          tl.fromTo(o.t, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, MARK[i] + 0.15);
+        });
+        tl.fromTo("#drop", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 8.35);
+        tl.to(["#l1", "#l2", "#l3"], { opacity: 0.32, duration: 0.8, ease: "power2.out" }, 8.4);
+        tl.to("#s1", { opacity: 0, y: -40, filter: "blur(12px)", duration: 0.7, ease: "power3.in" }, 9.45);
+
+        /* ---------- scene 2: introducing, in three beats ---------- */
+        tl.set("#s2", { opacity: 1 }, 0);
+        const i0 = maskWords($("#i0"), "Introducing"), i1 = maskWords($("#i1"), "Lightning v3.1 Pro");
+        const ea = maskWords($("#e-a"), "Our text to speech model"), eb = maskWords($("#e-b"), "now optimized for");
+        const chars = "entities".split("").map((c) => { const m = mk("mw"), i = mk("mi", c); m.append(i); $("#e-c").append(m); return i; });
+        tl.set(["#i0", "#i1", "#e-a", "#e-b", "#e-c"], { opacity: 1 }, 0);
+        [i0, i1, ea, eb, chars].forEach((a) => tl.set(a, { yPercent: 108 }, 0));
+        rise(i0, 10.45, 0.9); rise(i1, [11.3, 11.42, 11.54], 1.0);
+        drop([...i0, ...i1], 12.45, 0.05);
+        rise(ea, [12.64, 12.88, 13.25, 13.45, 14.0], 0.85);                 // our · text · to · speech · model
+        drop(ea, 14.28, 0.02);
+        rise(eb, [14.62, 14.84, 15.48], 0.85);                              // now · optimized · for
+        tl.to("#e-b", { y: -150, scale: 0.78, duration: 0.9, ease: "expo.inOut" }, 15.66);
+        chars.forEach((c, k) => tl.fromTo(c, { yPercent: 108 }, { yPercent: 0, duration: 0.9, ease: "expo.out" }, 15.74 + k * 0.045));   // entities
+        tl.to("#s2", { opacity: 0, y: -40, filter: "blur(12px)", duration: 0.7, ease: "power3.in" }, 17.0);
+
+        /* ---------- scene 3: the four kinds of entity ---------- */
+        const ROWS = [["Names", ["Siobhan", "Saoirse", "Nguyen"], 17.3], ["Brands", ["Hyundai", "Porsche", "Xiaomi"], 17.82], ["Stock names", ["Nvidia", "Tesla", "Zomato"], 18.43], ["Abbreviations", ["NACH", "IFSC", "UPI"], 19.38]];
+        tl.set("#s3", { opacity: 0 }, 0); tl.set("#s3", { opacity: 1 }, 17.2);
+        ROWS.forEach(([label, ws, t0], r) => {
+          const row = mk("row", "", "div"); row.style.top = 168 + r * 164 + "px";
+          const lb = mk("lb", label, "div"), wsEl = mk("ws", "", "div"), hl = mk("hl", "", "div"); row.append(lb, wsEl, hl); $("#s3").append(row);
+          const words = ws.map((w) => { const m = mk("mw"), i = mk("mi", w); m.append(i); wsEl.append(m); return i; });
+          tl.set(words, { yPercent: 108 }, 0); tl.set(lb, { opacity: 0 }, 0);
+          tl.to(lb, { opacity: 1, duration: 0.5, ease: "power2.out" }, t0);
+          tl.to(hl, { scaleX: 1, duration: 0.9, ease: "expo.out" }, t0);
+          rise(words, t0 + 0.12, 0.9); words.forEach((_, k) => 0);
+        });
+        const close = maskWords($("#close"), "Said the way a person says them.");
+        tl.set(close, { yPercent: 108 }, 0);
+        [3.30, 3.65, 3.91, 4.17, 4.26, 4.78, 5.13].forEach((rel, k) => { tl.to(close[k], { yPercent: 0, duration: 0.7, ease: "expo.out" }, 17.3 + rel); tl.to(close[k], { color: "#f3f5f4", duration: 0.25 }, 17.3 + rel + 0.1); });
+        tl.to("#s3", { opacity: 0, y: -40, filter: "blur(12px)", duration: 0.7, ease: "power3.in" }, 22.75);
+
+        /* ---------- scene 4: pronunciation dictionary ---------- */
+        const ENT = [["Siobhan", "shivawn"], ["Hyundai", "hyun dye"], ["Nvidia", "envidia"]], chk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+        const entryEls = ENT.map(([w, p]) => {
+          const e = mk("entry", "", "div"); e.append(mk("word", w, "div")); const ar = document.createElementNS("http://www.w3.org/2000/svg", "svg"); ar.setAttribute("class", "arrow"); ar.setAttribute("viewBox", "0 0 30 12"); ar.setAttribute("fill", "none"); ar.setAttribute("stroke", "currentColor"); ar.setAttribute("stroke-width", "2"); ar.setAttribute("stroke-linecap", "round");
+          const pa = document.createElementNS("http://www.w3.org/2000/svg", "path"); pa.setAttribute("d", "M1 6h26M22 1l5 5-5 5"); ar.append(pa); e.append(ar, mk("ph", p, "div"));
+          const sv = mk("saved", "", "div"); sv.append(document.createTextNode("Saved")); const ico = document.createElementNS("http://www.w3.org/2000/svg", "svg"); ico.setAttribute("viewBox", "0 0 24 24"); ico.setAttribute("width", "22"); ico.setAttribute("height", "22"); ico.setAttribute("fill", "none"); ico.setAttribute("stroke", "currentColor"); ico.setAttribute("stroke-width", "3"); ico.setAttribute("stroke-linecap", "round"); ico.setAttribute("stroke-linejoin", "round");
+          const ip = document.createElementNS("http://www.w3.org/2000/svg", "path"); ip.setAttribute("d", "M5 12.5l4.5 4.5L19 7"); ico.append(ip); sv.prepend(ico); e.append(sv); $("#dict").append(e); return { e, sv };
+        });
+        const callEls = [1, 2, 3].map((n) => { const c = mk("c", "", "div"); const ico = document.createElementNS("http://www.w3.org/2000/svg", "svg"); ico.setAttribute("viewBox", "0 0 24 24"); ico.setAttribute("fill", "none"); ico.setAttribute("stroke", "currentColor"); ico.setAttribute("stroke-width", "2.4"); ico.setAttribute("stroke-linecap", "round"); ico.setAttribute("stroke-linejoin", "round"); const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("d", "M5 12.5l4.5 4.5L19 7"); ico.append(p); c.append(ico, document.createTextNode("Call " + n)); $("#calls").append(c); return c; });
+        const T4 = 23.4;
+        tl.set("#s4", { opacity: 0 }, 0); tl.set("#s4", { opacity: 1 }, 23.2);
+        tl.fromTo("#card", { opacity: 0, y: 70, scale: 0.97, filter: "blur(14px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 1.1, ease: "expo.out" }, 23.3);
+        tl.set("#dlab", { opacity: 0 }, 0); tl.to("#dlab", { opacity: 1, duration: 0.6 }, T4 + 1.9);          // "pronunciation dictionary"
+        entryEls.forEach((o, i) => tl.fromTo(o.e, { opacity: 0, y: 26, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "expo.out" }, T4 + 0.55 + i * 0.3));   // "hardest words"
+        tl.fromTo("#btn", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, T4 + 3.7);                // "Save"
+        tl.to("#btn", { scale: 0.92, duration: 0.12, ease: "power2.in" }, T4 + 4.55); tl.to("#btn", { scale: 1, duration: 0.35, ease: "back.out(3)" }, T4 + 4.67);
+        entryEls.forEach((o, i) => tl.fromTo(o.sv, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, T4 + 4.75 + i * 0.16));
+        callEls.forEach((c, i) => tl.fromTo(c, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, T4 + 5.7 + i * 0.35));   // "every call uses it"
+        tl.to("#s4", { opacity: 0, y: -40, filter: "blur(12px)", duration: 0.7, ease: "power3.in" }, 30.35);
+
+        /* ---------- scene 5: call to action ---------- */
+        const f1 = maskWords($("#f1"), "Start building with"), f2 = maskWords($("#f2"), "Lightning v3.1 Pro");
+        tl.set([...f1, ...f2], { yPercent: 108 }, 0);
+        rise(f1, [30.95, 31.15, 31.35], 0.9); rise(f2, [32.2, 32.55, 32.95], 1.0);
+        drop([...f1, ...f2], 34.0, 0.04);
+        tl.fromTo("#endlogo", { opacity: 0, filter: "blur(14px)", y: 20 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.0, ease: "expo.out" }, 34.9);
+
+        window.__timelines["main"] = tl; tl.seek(0);
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

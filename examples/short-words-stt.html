@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/data.js"></script>
+    <style>
+      @font-face { font-family: "Aeonik"; font-weight: 400; src: url("assets/fonts/aeonikpro-regular.otf") format("opentype"); }
+      @font-face { font-family: "Aeonik"; font-weight: 500; src: url("assets/fonts/aeonikpro-medium.otf") format("opentype"); }
+      :root { --paper: #ffffff; --ink: #0b1124; --dim: rgba(11,17,36,0.40); --label: #7d88a3; --blue: #1f5fe0; --sky: #7db4ff; --rule: #dbe2f1; --night: #050607; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: "Aeonik", sans-serif; font-weight: 400; color: var(--ink); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
+      .fill { position: absolute; inset: 0; }
+      #bg canvas { width: 1920px; height: 1080px; display: block; }
+      .scene { position: absolute; inset: 0; }
+      .tag { font-weight: 500; font-size: 22px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--label); }
+
+      #brand { position: absolute; left: 72px; top: 58px; width: 196px; height: auto; display: block; opacity: 0; }
+
+      /* ---- scene A: the call ---- */
+      #live { position: absolute; right: 96px; top: 70px; display: flex; align-items: center; gap: 18px; }
+      #live i { display: block; width: 12px; height: 12px; background: var(--blue); }
+      #live .t { font-variant-numeric: tabular-nums; color: var(--ink); letter-spacing: 0.12em; }
+      #demo { position: absolute; left: 0; right: 0; bottom: 46px; text-align: center; font-size: 19px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--label); font-weight: 500; }
+      #blockA { position: absolute; left: 160px; top: 225px; width: 1500px; }
+      .who { font-weight: 500; font-size: 20px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--label); margin-bottom: 14px; }
+      .who.c { color: var(--blue); }
+      .line .w { display: inline-block; white-space: pre; }
+      #agent { font-size: 36px; line-height: 1.4; color: var(--dim); letter-spacing: -0.01em; margin-bottom: 46px; min-height: 100px; }
+      #agent .w { color: var(--dim); }
+      #caller { font-size: 66px; line-height: 1.22; letter-spacing: -0.028em; min-height: 262px; }
+      #caller .w.hit { color: var(--blue); font-weight: 500; }
+      #tl { position: absolute; left: 160px; top: 760px; width: 1596px; height: 190px; display: flex; align-items: center; gap: 7px; }
+      #tl i { display: block; width: 7px; border-radius: 3px; flex: none; background: #d3dbee; height: 8px; }
+      #brk { position: absolute; left: 1686px; top: 975px; width: 56px; height: 2px; background: var(--blue); transform-origin: left center; opacity: 0; }
+      #brkl { position: absolute; left: 1430px; top: 986px; width: 330px; text-align: right; font-weight: 500; font-size: 28px; letter-spacing: 0.02em; color: var(--blue); opacity: 0; }
+
+      /* ---- scene B: the word ---- */
+      #sB { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #b1 { font-size: 64px; letter-spacing: -0.03em; color: var(--dim); margin-bottom: 8px; }
+      #b2 { font-size: 330px; font-weight: 500; letter-spacing: -0.06em; line-height: 1.0; color: var(--blue); }
+      #b3 { margin-top: 18px; font-size: 58px; letter-spacing: -0.025em; color: var(--ink); }
+      #bbr { width: 520px; height: 18px; margin-top: 34px; position: relative; opacity: 0; }
+      #bbr::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: var(--blue); }
+      #bbr::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 18px; border-left: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+
+      /* ---- scene C: short words, plain type between hairlines ---- */
+      #ctitle { position: absolute; left: 160px; top: 140px; font-size: 112px; font-weight: 500; letter-spacing: -0.04em; line-height: 1.0; }
+      #csub { position: absolute; left: 164px; top: 276px; font-size: 38px; letter-spacing: -0.01em; color: var(--dim); }
+      #badge { position: absolute; right: 160px; top: 186px; font-weight: 500; font-size: 24px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue); opacity: 0; padding-bottom: 12px; border-bottom: 2px solid var(--blue); }
+      #grid { position: absolute; left: 160px; top: 400px; width: 1600px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 44px 60px; }
+      .cd { position: relative; height: 240px; padding-top: 26px; border-top: 2px solid var(--rule); transition: none; }
+      .cd .wv { height: 64px; display: flex; align-items: center; gap: 5px; }
+      .cd .wv i { display: block; width: 5px; border-radius: 2px; background: #d3dbee; height: 4px; flex: none; }
+      .cd .tx { margin-top: 20px; font-size: 76px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.05; color: var(--ink); opacity: 0; white-space: nowrap; }
+      .cd .mt { position: absolute; left: 0; bottom: 18px; font-weight: 500; font-size: 20px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); }
+      .cd.on { border-top-color: var(--blue); }
+      .cd.on .tx { color: var(--blue); }
+
+      /* ---- scene D ---- */
+      #sD { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #d1 { font-size: 250px; font-weight: 500; letter-spacing: -0.055em; line-height: 1.0; }
+      #d2 { margin-top: 10px; font-size: 62px; letter-spacing: -0.02em; line-height: 1.25; text-align: center; color: var(--blue); }
+      #d3 { margin-top: 70px; font-size: 40px; letter-spacing: -0.01em; color: var(--ink); opacity: 0; }
+      #d3 b { font-weight: 500; color: var(--blue); }
+
+      /* black end */
+      #black { background: var(--night); clip-path: inset(100% 0 0 0); }
+      #endlogo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+      #endlogo img { width: 720px; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="48" data-width="1920" data-height="1080">
+
+      <audio id="a_a1" src="assets/audio/trim/a1.wav" data-start="1.1" data-duration="4.3" data-track-index="10" data-volume="1"></audio>
+      <audio id="a_c1" src="assets/audio/trim/c1.wav" data-start="6.0" data-duration="9.19" data-track-index="11" data-volume="1"></audio>
+      <audio id="a_n1" src="assets/audio/narr/n1.wav" data-start="16.9" data-duration="5.54" data-track-index="12" data-volume="1"></audio>
+      <audio id="a_n2" src="assets/audio/narr/n2.wav" data-start="23.0" data-duration="1.72" data-track-index="13" data-volume="1"></audio>
+      <audio id="a_s0" src="assets/audio/trim/s_yes.wav" data-start="25.0" data-duration="0.6" data-track-index="14" data-volume="1"></audio>
+      <audio id="a_s1" src="assets/audio/trim/s_no.wav" data-start="26.0" data-duration="0.6" data-track-index="15" data-volume="1"></audio>
+      <audio id="a_s2" src="assets/audio/trim/s_uhhuh.wav" data-start="27.0" data-duration="0.66" data-track-index="16" data-volume="1"></audio>
+      <audio id="a_s3" src="assets/audio/trim/s_okay.wav" data-start="28.0" data-duration="0.64" data-track-index="17" data-volume="1"></audio>
+      <audio id="a_s4" src="assets/audio/trim/c2.wav" data-start="29.0" data-duration="1.36" data-track-index="18" data-volume="1"></audio>
+      <audio id="a_s5" src="assets/audio/trim/s_nope.wav" data-start="30.7" data-duration="0.5" data-track-index="19" data-volume="1"></audio>
+      <audio id="a_n3" src="assets/audio/narr/n3.wav" data-start="31.9" data-duration="2.42" data-track-index="20" data-volume="1"></audio>
+      <audio id="a_p1" src="assets/audio/phonepcm/s_no.wav" data-start="34.6" data-duration="0.6" data-track-index="21" data-volume="1"></audio>
+      <audio id="a_p4" src="assets/audio/phonepcm/c2.wav" data-start="35.7" data-duration="1.36" data-track-index="22" data-volume="1"></audio>
+      <audio id="a_p5" src="assets/audio/phonepcm/s_nope.wav" data-start="37.4" data-duration="0.5" data-track-index="23" data-volume="1"></audio>
+      <audio id="a_n4" src="assets/audio/narr/n4.wav" data-start="38.7" data-duration="3.31" data-track-index="24" data-volume="1"></audio>
+
+      <div id="bg" class="fill clip" data-start="0" data-duration="48" data-track-index="0"><canvas id="mesh" width="960" height="540"></canvas></div>
+
+      <div id="sA" class="scene clip" data-start="0" data-duration="17.2" data-track-index="3">
+        <div id="live"><i></i><span class="tag">Live call</span><span class="tag t" id="timer">00:00</span></div>
+        <div id="blockA">
+          <div class="who">Agent</div><div class="line" id="agent"></div>
+          <div class="who c">Caller</div><div class="line" id="caller"></div>
+        </div>
+        <div id="tl"></div><div id="brk"></div><div id="brkl">less than half a second</div>
+        <div id="demo">Demo audio · Pulse transcript</div>
+      </div>
+
+      <div id="sB" class="scene clip" data-start="16.5" data-duration="7.0" data-track-index="3">
+        <div id="b1">9 seconds of explanation.</div>
+        <div id="b2">no.</div>
+        <div id="b3">less than half a second.</div>
+        <div id="bbr"></div>
+      </div>
+
+      <div id="sC" class="scene clip" data-start="22.8" data-duration="16.4" data-track-index="3">
+        <div id="ctitle">Short words.</div>
+        <div id="csub">What Pulse heard, word for word.</div>
+        <div id="badge">8 kHz phone line</div>
+        <div id="grid"></div>
+      </div>
+
+      <div id="sD" class="scene clip" data-start="38.4" data-duration="6.0" data-track-index="3">
+        <div id="d1">Pulse</div>
+        <div id="d2">Speech-to-text for the words<br />that change a call.</div>
+        <div id="d3">Try Pulse on <b>smallest.ai</b></div>
+      </div>
+
+      <img id="brand" class="clip" data-start="0" data-duration="44.4" data-track-index="4" src="assets/logo_black.png" alt="smallest.ai" />
+      <div id="black" class="fill clip" data-start="0" data-duration="48" data-track-index="5"></div>
+      <div id="endlogo" class="clip" data-start="0" data-duration="48" data-track-index="6"><img src="assets/logo.png" alt="smallest.ai" /></div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const TOTAL = 48, A1 = 1.1, C1 = 6.0, D = window.D;
+      const mk = (cls, text, tag) => { const e = document.createElement(tag || "span"); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+      const pad = (n) => String(n).padStart(2, "0");
+
+      /* ---------- paper-white background with the brand's soft blue contours ---------- */
+      const P = { t: 0, int: 0.0 };
+      const canvas = $("#mesh"), gl = canvas.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+      const VS = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
+      const FS = `precision highp float; uniform vec2 R; uniform float T; uniform float I;
+        vec3 ramp(float v){ vec3 w=vec3(1.0,1.0,1.0); vec3 c=mix(w,vec3(0.94,0.965,1.0),smoothstep(0.12,0.40,v)); c=mix(c,vec3(0.87,0.925,1.0),smoothstep(0.34,0.55,v)); c=mix(c,vec3(0.78,0.87,1.0),smoothstep(0.55,0.90,v)); return c; }
+        void main(){ vec2 uv=gl_FragCoord.xy/R; vec2 p=(uv-0.5)*vec2(R.x/R.y,1.0)*3.4; float t=T*0.09;
+          for(int i=0;i<5;i++){ float fi=float(i); p+=0.62*vec2(sin(p.y*1.25+t*(1.0+fi*0.3)+fi*1.7),cos(p.x*1.1-t*(0.8+fi*0.25)+fi*2.3)); }
+          float a=0.5+0.5*sin(p.x*1.15+p.y*0.7+t*0.5), b=0.5+0.5*sin(length(p)*1.5-t); float v=smoothstep(0.12,0.88,0.55*a+0.45*b);
+          float edge=smoothstep(0.18,0.95,distance(uv,vec2(0.5,0.5))*1.35); v*=I*(0.35+0.85*edge); gl_FragColor=vec4(ramp(clamp(v,0.0,1.0)),1.0); }`;
+      const sh = (ty, src) => { const s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+      const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const uR = gl.getUniformLocation(prog, "R"), uT = gl.getUniformLocation(prog, "T"), uI = gl.getUniformLocation(prog, "I");
+
+      /* ---------- scene A: whole-call waveform, lit as the call plays ---------- */
+      const BARS = D.bars, tlEl = $("#tl"), tbars = [], NO_FROM = 109;
+      BARS.forEach(() => { const b = document.createElement("i"); tlEl.append(b); tbars.push(b); });
+      function drawTimeline(t) {
+        const played = (t - A1) / 0.125;
+        tbars.forEach((b, i) => {
+          const on = i < played, last = i >= NO_FROM && BARS[i] > 0.02;
+          b.style.height = 8 + BARS[i] * 168 + "px";
+          b.style.background = on ? (last ? "#0b1124" : "linear-gradient(180deg,#7db4ff,#1f5fe0)") : "#d3dbee";
+        });
+      }
+
+      /* ---------- scene C: six short words, spectrum per cell ---------- */
+      const ORDER = ["s_yes", "s_no", "s_uhhuh", "s_okay", "c2", "s_nope"], STARTS = [25.0, 26.0, 27.0, 28.0, 29.0, 30.7];
+      const PHONE_AT = { s_no: 34.6, c2: 35.7, s_nope: 37.4 };
+      const NB = 25, CC = (NB - 1) / 2, cards = [];
+      ORDER.forEach((n) => {
+        const cd = mk("cd", "", "div"), wv = mk("wv", "", "div"), tx = mk("tx", D.short[n].textClean.replace(/\.$/, ""), "div"), mt = mk("mt", "", "div");
+        if (D.short[n].textClean.length > 12) tx.style.fontSize = "52px";
+        const bars = []; for (let i = 0; i < NB; i++) { const b = document.createElement("i"); wv.append(b); bars.push(b); }
+        cd.append(wv, tx, mt); $("#grid").append(cd); cards.push({ n, cd, tx, mt, bars });
+      });
+      function cardSpec(c, t) {
+        const d = D.short[c.n], s0 = STARTS[ORDER.indexOf(c.n)];
+        let spec = null, f = 0;
+        if (t >= s0 - 0.02 && t < s0 + d.dur + 0.3) { spec = d.specClean; f = (t - s0) * 30; }
+        if (PHONE_AT[c.n] !== undefined && t >= PHONE_AT[c.n] - 0.02 && t < PHONE_AT[c.n] + d.dur + 0.3) { spec = d.specPhone; f = (t - PHONE_AT[c.n]) * 30; }
+        let row = null;
+        if (spec) { const n = spec.length, i0 = Math.min(n - 1, Math.floor(f)), i1 = Math.min(n - 1, i0 + 1), fr = f - Math.floor(f); const dec = f / 30 > d.dur ? Math.max(0, 1 - (f / 30 - d.dur) / 0.3) : 1; row = spec[i0].map((x, j) => (x + (spec[i1][j] - x) * fr) * dec); }
+        c.bars.forEach((b, i) => {
+          let e = 0; if (row) { const p = (Math.abs(i - CC) / CC) * 33, j = Math.floor(p), fr = p - j; e = row[j] + ((row[Math.min(35, j + 1)] || 0) - row[j]) * fr; }
+          b.style.height = 4 + Math.pow(Math.min(1, e * 1.3), 0.85) * 58 + "px";
+          b.style.background = row ? "linear-gradient(180deg,#7db4ff,#1f5fe0)" : "#d3dbee";
+        });
+        c.cd.classList.toggle("on", !!row);
+      }
+
+      function draw() {
+        gl.viewport(0, 0, canvas.width, canvas.height); gl.uniform2f(uR, canvas.width, canvas.height); gl.uniform1f(uT, P.t); gl.uniform1f(uI, P.int);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        drawTimeline(P.t); cards.forEach((c) => cardSpec(c, P.t));
+        const ct = Math.max(0, Math.min(P.t - A1, 15.2)); $("#timer").textContent = pad(Math.floor(ct / 60)) + ":" + pad(Math.floor(ct % 60));
+      }
+      tl.to(P, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: draw }, 0);
+      tl.fromTo(P, { int: 0 }, { int: 1.0, duration: 2.5, ease: "power1.out", onUpdate: draw }, 0.1);
+      draw();
+
+      const rise = (sel, t, y) => tl.fromTo(sel, { opacity: 0, y: y || 30, filter: "blur(14px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, t);
+      const fall = (sel, t) => tl.to(sel, { opacity: 0, y: -40, filter: "blur(14px)", duration: 0.6, ease: "power3.in" }, t);
+      function words(host, list, t0) {
+        return list.map((w) => { const s = mk("w", w.t + " "); host.append(s); tl.fromTo(s, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.22, ease: "power2.out" }, t0 + w.s - 0.04); return s; });
+      }
+
+      function build() {
+        tl.fromTo("#brand", { opacity: 0, y: -10, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 0.5);
+        tl.to("#brand", { opacity: 0, duration: 0.4 }, 44.0);
+
+        // --- scene A: a long, rambling answer that ends on one tiny word
+        tl.set("#sA", { opacity: 0 }, 0); tl.to("#sA", { opacity: 1, duration: 0.8, ease: "power2.out" }, 0.3);
+        tl.fromTo("#blockA", { y: 20, filter: "blur(10px)" }, { y: 0, filter: "blur(0px)", duration: 1.0, ease: "expo.out" }, 0.4);
+        words($("#agent"), D.a1.words, A1);
+        const cw = words($("#caller"), D.c1.words, C1), last = cw[cw.length - 1]; last.classList.add("hit");
+        const tNo = C1 + D.c1.words[D.c1.words.length - 1].s;
+        tl.fromTo(last, { scale: 1 }, { scale: 1.16, duration: 0.25, ease: "power2.out", transformOrigin: "left bottom" }, tNo);
+        tl.to(last, { scale: 1, duration: 0.5, ease: "power2.inOut" }, tNo + 0.25);
+        tl.fromTo("#brk", { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, tNo + 0.1);
+        tl.fromTo("#brkl", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, tNo + 0.35);
+        fall("#sA", 16.0);
+
+        // --- scene B
+        tl.set("#sB", { opacity: 0 }, 0); tl.to("#sB", { opacity: 1, duration: 0.01 }, 16.5);
+        tl.fromTo("#b1", { opacity: 0, y: 24, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 16.95);
+        tl.fromTo("#b2", { opacity: 0, y: 60, scale: 0.9, filter: "blur(24px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 1.1, ease: "expo.out" }, 19.1);
+        tl.fromTo("#bbr", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.7, ease: "expo.out" }, 20.1);
+        tl.fromTo("#b3", { opacity: 0, y: 20, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 20.2);
+        tl.to("#b1", { opacity: 0.4, duration: 0.6 }, 20.6);
+        fall("#sB", 22.4);
+
+        // --- scene C
+        tl.set("#sC", { opacity: 0 }, 0); tl.to("#sC", { opacity: 1, duration: 0.01 }, 22.8);
+        rise("#ctitle", 22.9); rise("#csub", 23.15, 20);
+        cards.forEach((c, i) => {
+          tl.fromTo(c.cd, { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 23.4 + i * 0.1);
+          const s0 = STARTS[i], d = D.short[c.n];
+          tl.fromTo(c.tx, { opacity: 0, y: 16, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, s0 + 0.18);
+          c.mt.textContent = "Pulse · " + d.dur.toFixed(2) + " s"; tl.set(c.mt, { opacity: 0 }, 0); tl.to(c.mt, { opacity: 1, duration: 0.4 }, s0 + 0.3);
+        });
+        tl.fromTo("#badge", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 31.9);
+        tl.to("#csub", { opacity: 0, duration: 0.4 }, 31.9);
+        cards.forEach((c, i) => {
+          const tt = 32.6 + i * 0.35;
+          tl.to(c.mt, { opacity: 0, duration: 0.2 }, tt);
+          tl.add(() => { c.mt.textContent = "Phone · 8 kHz · same result"; }, tt + 0.2);
+          tl.to(c.mt, { opacity: 1, color: "#1f5fe0", duration: 0.4 }, tt + 0.22);
+        });
+        fall("#sC", 38.0);
+
+        // --- scene D
+        tl.set("#sD", { opacity: 0 }, 0); tl.to("#sD", { opacity: 1, duration: 0.01 }, 38.4);
+        tl.fromTo("#d1", { opacity: 0, y: 50, scale: 0.94, filter: "blur(22px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 1.1, ease: "expo.out" }, 38.7);
+        tl.fromTo("#d2", { opacity: 0, y: 30, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 39.9);
+        tl.fromTo("#d3", { opacity: 0, y: 20, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 42.3);
+
+        // paper -> black end
+        fall("#sD", 43.8);
+        tl.fromTo("#black", { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.9, ease: "expo.inOut" }, 44.0);
+        tl.fromTo("#endlogo", { opacity: 0, filter: "blur(14px)", y: 20 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.0, ease: "expo.out" }, 45.0);
+
+        window.__timelines["main"] = tl; tl.seek(0);
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

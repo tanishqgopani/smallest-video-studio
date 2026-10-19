@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/gradient-bg.js"></script>
+    <script src="assets/data.js"></script>
+    <style>
+      @font-face { font-family: "Aeonik"; font-weight: 400; src: url("assets/fonts/aeonikpro-regular.otf") format("opentype"); }
+      @font-face { font-family: "Aeonik"; font-weight: 500; src: url("assets/fonts/aeonikpro-medium.otf") format("opentype"); }
+      :root { --night: #050607; --ink: #f3f5f4; --dim: rgba(243,245,244,0.50); --sky: #8ec5ff; --rose: #ff7a9c; --edge: rgba(255,255,255,0.16); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--night); }
+      body { font-family: "Aeonik", sans-serif; font-weight: 400; color: var(--ink); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--night); }
+      .fill { position: absolute; inset: 0; }
+      #bg canvas { width: 1920px; height: 1080px; display: block; transform-origin: 50% 50%; }
+      #vignette { background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%); pointer-events: none; }
+      #grain { background-image: url("assets/grain.png"); background-size: 512px 512px; mix-blend-mode: overlay; opacity: 0.24; pointer-events: none; }
+      #stage { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+      .scene { position: absolute; inset: 0; }
+      #brand { position: absolute; left: 72px; top: 58px; width: 190px; height: auto; display: block; opacity: 0; }
+
+      .mw { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.2em; margin-bottom: -0.2em; }
+      .mi { display: inline-block; white-space: pre; will-change: transform; }
+      .cap { font-weight: 500; font-size: 22px; letter-spacing: 0.3em; text-transform: uppercase; white-space: nowrap; }
+
+      /* scene 1 */
+      #s1 { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding-left: 190px; }
+      #s1 .ln { font-size: 108px; line-height: 1.2; letter-spacing: -0.035em; white-space: nowrap; }
+      #s1 .ln.hero { margin-top: 40px; }
+      .hl { color: var(--sky); font-weight: 500; }
+
+      /* scene 2: the stack, as cumulative delay */
+      .r2 { position: absolute; left: 190px; right: 190px; height: 100px; }
+      .r2 .lb { position: absolute; left: 0; top: 0; font-size: 70px; line-height: 100px; letter-spacing: -0.03em; font-weight: 500; white-space: nowrap; }
+      .r2 .hr { position: absolute; left: 0; right: 0; bottom: -14px; height: 1.5px; background: rgba(255,255,255,0.14); transform-origin: left center; transform: scaleX(0); }
+      .bar2 { position: absolute; height: 30px; border-radius: 4px; transform-origin: left center; transform: scaleX(0); background: linear-gradient(90deg, #3d7bff, #bfe0ff); }
+      .conn { position: absolute; width: 1.5px; background: rgba(191,224,255,0.45); transform-origin: top center; transform: scaleY(0); }
+      #tot { position: absolute; left: 190px; top: 764px; display: flex; align-items: center; color: var(--rose); }
+      #tbar { position: absolute; left: 790px; top: 790px; width: 920px; height: 30px; border-radius: 4px; background: var(--rose); transform-origin: left center; transform: scaleX(0); }
+      #tdiv { position: absolute; left: 190px; right: 190px; top: 740px; height: 1.5px; background: rgba(255,255,255,0.28); transform-origin: left center; transform: scaleX(0); }
+
+      /* scene 3: bolted on top */
+      .st { position: absolute; left: 190px; width: 600px; height: 66px; border-radius: 14px; border: 1.5px solid var(--edge); background: rgba(8,12,26,0.45); display: flex; align-items: center; padding-left: 26px; font-size: 30px; color: var(--dim); white-space: nowrap; }
+      #td { border-color: var(--sky); background: rgba(142,197,255,0.10); color: var(--ink); font-weight: 500; font-size: 34px; padding-right: 26px; justify-content: space-between; }
+      #td svg { width: 30px; height: 30px; opacity: 0; color: var(--rose); }
+      #a3 { position: absolute; left: 1000px; top: 250px; width: 740px; font-size: 76px; line-height: 1.16; letter-spacing: -0.03em; }
+      #a3 .dm { color: var(--dim); }
+      .it { position: absolute; left: 1000px; width: 730px; height: 100px; }
+      .it .t { position: absolute; left: 0; top: 0; font-size: 70px; line-height: 100px; letter-spacing: -0.03em; font-weight: 500; white-space: nowrap; }
+      .it svg { position: absolute; right: 0; top: 34px; width: 32px; height: 32px; color: var(--rose); opacity: 0; }
+      .it .hr { position: absolute; left: 0; right: 0; bottom: -12px; height: 1.5px; background: rgba(255,255,255,0.14); transform-origin: left center; transform: scaleX(0); }
+      #wrong { position: absolute; left: 1000px; top: 720px; width: 760px; font-size: 54px; white-space: nowrap; letter-spacing: -0.03em; color: #ffa8be; line-height: 1.12; }
+
+      /* scene 4 */
+      .c2 { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; }
+      #h1 { top: 270px; font-size: 300px; font-weight: 500; letter-spacing: -0.05em; line-height: 1.05; color: var(--sky); }
+      #h2 { top: 640px; font-size: 104px; letter-spacing: -0.035em; line-height: 1.1; }
+
+      /* scene 5 */
+      #n1 { position: absolute; left: 190px; top: 250px; font-size: 118px; letter-spacing: -0.04em; white-space: nowrap; line-height: 1.1; }
+      .io { position: absolute; top: 592px; font-size: 64px; font-weight: 500; letter-spacing: -0.03em; white-space: nowrap; line-height: 76px; opacity: 0; }
+      #ioa { left: 190px; } #iob { right: 190px; text-align: right; }
+      #viz5 { position: absolute; left: 520px; top: 550px; width: 880px; height: 160px; opacity: 0; }
+      #ghost { position: absolute; left: 520px; width: 880px; top: 484px; text-align: center; color: var(--rose); opacity: 0; }
+      #ghost span { position: relative; display: inline-block; }
+      #ghost i { position: absolute; left: -8px; right: -8px; top: 50%; height: 2px; background: var(--rose); transform-origin: left center; transform: scaleX(0); }
+
+      /* scene 6 */
+      #viz6 { position: absolute; left: 190px; top: 330px; width: 1540px; height: 520px; opacity: 0; }
+      .rl { position: absolute; left: 190px; color: var(--sky); opacity: 0; }
+      #rl1 { top: 292px; } #rl2 { top: 492px; } #rl3 { top: 692px; }
+
+      #endlogo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+      #endlogo img { width: 720px; display: block; }
+
+      #voice { position: absolute; left: 0; right: 0; bottom: 62px; height: 64px; display: flex; justify-content: center; align-items: center; gap: 6px; opacity: 0; }
+      #voice i { display: block; width: 4px; border-radius: 2px; background: var(--sky); height: 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="49.2" data-width="1920" data-height="1080">
+
+      <audio id="an1" src="assets/audio/trim/n1.wav" data-start="0.8"  data-duration="4.761" data-track-index="10" data-volume="1"></audio>
+      <audio id="an2" src="assets/audio/trim/n2.wav" data-start="6.3"  data-duration="9.439" data-track-index="11" data-volume="1"></audio>
+      <audio id="an3" src="assets/audio/trim/n3.wav" data-start="16.5" data-duration="10.966" data-track-index="12" data-volume="1"></audio>
+      <audio id="an4" src="assets/audio/trim/n4.wav" data-start="28.3" data-duration="1.507" data-track-index="13" data-volume="1"></audio>
+      <audio id="an5" src="assets/audio/trim/n5.wav" data-start="30.5" data-duration="5.371" data-track-index="14" data-volume="1"></audio>
+      <audio id="an6" src="assets/audio/trim/n6.wav" data-start="36.6" data-duration="7.994" data-track-index="15" data-volume="1"></audio>
+
+      <div id="bg" class="fill clip" data-start="0" data-duration="49.2" data-track-index="0"><canvas id="mesh" width="960" height="540"></canvas></div>
+      <div id="vignette" class="fill clip" data-start="0" data-duration="49.2" data-track-index="1"></div>
+
+      <div id="stage" class="clip" data-start="0" data-duration="49.2" data-track-index="3">
+        <div id="s1" class="scene"><div class="ln" id="l1"></div><div class="ln" id="l2"></div><div class="ln hero" id="l3"></div></div>
+        <div id="s2" class="scene"></div>
+        <div id="s3" class="scene"><div id="a3"></div><div id="wrong"></div></div>
+        <div id="s4" class="scene"><div id="h1" class="c2"></div><div id="h2" class="c2"></div></div>
+        <div id="s5" class="scene">
+          <div id="n1"></div>
+          <div id="ioa" class="io">Audio in</div><div id="iob" class="io">Audio out</div>
+          <canvas id="viz5" width="880" height="160"></canvas>
+          <div id="ghost"><span class="cap">Transcript<i></i></span></div>
+        </div>
+        <div id="s6" class="scene">
+          <div id="rl1" class="rl cap">Audio frames</div><div id="rl2" class="rl cap">Conversational state</div><div id="rl3" class="rl cap">Response</div>
+          <canvas id="viz6" width="1540" height="520"></canvas>
+        </div>
+      </div>
+
+      <div id="voice" class="clip" data-start="0" data-duration="49.2" data-track-index="4"></div>
+      <div id="grain" class="fill clip" data-start="0" data-duration="49.2" data-track-index="5"></div>
+      <img id="brand" class="clip" data-start="0" data-duration="49.2" data-track-index="6" src="assets/logo.png" alt="smallest.ai" />
+      <div id="endlogo" class="clip" data-start="0" data-duration="49.2" data-track-index="7"><img src="assets/logo.png" alt="smallest.ai" /></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const TOTAL = 49.2, ND = window.N;
+      const NS = { n1: 0.8, n2: 6.3, n3: 16.5, n4: 28.3, n5: 30.5, n6: 36.6 };
+      const mk = (cls, text, tag) => { const e = document.createElement(tag || "span"); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+      const S2 = (t, f, ph) => Math.sin(2 * Math.PI * f * t + ph);
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const SVGNS = "http://www.w3.org/2000/svg";
+      const xIcon = () => { const s = document.createElementNS(SVGNS, "svg"); s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "2.4"); s.setAttribute("stroke-linecap", "round"); const p = document.createElementNS(SVGNS, "path"); p.setAttribute("d", "M6 6l12 12M18 6L6 18"); s.append(p); return s; };
+
+      /* word times from the real clips: phrase start/end come from silence detection, words are spread by character weight */
+      function seg(clip, s, e, text) {
+        const ws = text.split(" "), wt = ws.map((w) => w.length + 1.5), sum = wt.reduce((a, b) => a + b, 0); let acc = 0;
+        return ws.map((w, i) => { const t = NS[clip] + s + (e - s) * acc / sum; acc += wt[i]; return { w, t }; });
+      }
+
+      /* ---------- dark contour background ---------- */
+      const P = { t: 0, int: 0.0, a5: 0, a6: 0, a62: 0, a63: 0 };
+      /* moving gradient in the colours the user gave (assets/gradient-bg.js); mode: "contours" | "mesh" | "flow" */
+      const bg = GradientBG.create($("#mesh"), { colors: ["#050607", "#051257", "#124de0", "#2b78e6", "#6bb3ff"], stops: [0, 0.40, 0.50, 0.64, 1.0], mode: "contours", speed: 1, light: false }   /* Smallest house blues */);
+
+      /* ---------- envelope helper ---------- */
+      function envAt(clip, tt) {                       // tt = seconds into the clip
+        const d = ND[clip]; if (tt < 0 || tt > d.dur) return 0;
+        const f = tt * 30, i0 = Math.floor(f), fr = f - i0, a = d.env[i0] || 0, b = d.env[i0 + 1] || a; return a + (b - a) * fr;
+      }
+
+      /* ---------- narrator voice line ---------- */
+      const NV = 61, vbars = [], voice = $("#voice");
+      for (let i = 0; i < NV; i++) { const b = document.createElement("i"); voice.append(b); vbars.push(b); }
+      function drawVoice(t) {
+        let e = 0;
+        Object.keys(NS).forEach((k) => { const d = t - NS[k]; if (d >= 0 && d < ND[k].dur + 0.2) e = Math.max(e, envAt(k, d)); });
+        vbars.forEach((b, i) => {
+          const c = (NV - 1) / 2, taper = Math.pow(Math.cos(((i - c) / c) * Math.PI / 2), 0.9), r = 0.55 + 0.45 * Math.abs(Math.sin(i * 1.7 + t * 9));
+          b.style.height = 4 + Math.pow(Math.min(1, e * 1.5), 0.8) * 52 * taper * r + "px"; b.style.opacity = 0.35 + 0.6 * Math.min(1, e * 1.6);
+        });
+      }
+      function drawCam(t) {
+        const x = 7 * S2(t, 0.045, 0.4) + 3 * S2(t, 0.11, 1.9), y = 5 * S2(t, 0.037, 1.0) + 2 * S2(t, 0.09, 0.3), r = 0.14 * S2(t, 0.05, 0.8), sc = 1.0 + 0.045 * (t / TOTAL);
+        $("#stage").style.transform = "translate3d(" + x.toFixed(2) + "px," + y.toFixed(2) + "px,0) rotate(" + r.toFixed(3) + "deg) scale(" + sc.toFixed(4) + ")";
+        $("#mesh").style.transform = "translate3d(" + (-x * 1.6).toFixed(2) + "px," + (-y * 1.6).toFixed(2) + "px,0) scale(1.06)";
+      }
+
+      /* ---------- scene 5: audio flows straight through ---------- */
+      const c5 = $("#viz5").getContext("2d"), N5 = 55, T5 = NS.n5;
+      function drawViz5(t) {
+        c5.clearRect(0, 0, 880, 160);
+        const a = P.a5; if (a <= 0.001) return;
+        c5.globalAlpha = a * 0.22; c5.fillStyle = "#bfe0ff"; c5.fillRect(0, 79, 880, 2);
+        for (let i = 0; i < N5; i++) {
+          const x = 8 + i * 16, lag = i * 0.045, e = Math.pow(envAt("n5", t - T5 - lag), 0.75);   // a bar sees the sound a moment after the one to its left
+          const h = 4 + 130 * e * (0.55 + 0.45 * Math.abs(Math.sin(i * 0.9 + t * 3)));
+          const k = i / (N5 - 1); c5.globalAlpha = a * (0.35 + 0.65 * Math.sin(Math.PI * clamp(k, 0.02, 0.98)));
+          c5.fillStyle = k < 0.5 ? "#bfe0ff" : "#8ec5ff"; c5.beginPath(); c5.roundRect(x, 80 - h / 2, 6, h, 3); c5.fill();
+        }
+        c5.globalAlpha = 1;
+      }
+
+      /* ---------- scene 6: frames arrive, state updates, response forms early ---------- */
+      const c6 = $("#viz6").getContext("2d"), T6 = NS.n6, K = 96, PITCH = 16, SPAN = 7.85, TR = 40.96;
+      const arrive = (k) => T6 + 0.06 + (k / K) * SPAN;
+      const E6 = []; for (let k = 0; k < K; k++) { const s = (arrive(k) - T6) * 30; let m = 0; for (let j = -2; j <= 2; j++) m += ND.n6.env[clamp(Math.round(s) + j, 0, ND.n6.env.length - 1)]; E6.push(m / 5); }
+      const stateV = (k) => 0.5 * Math.sin(k * 0.17) + 0.25 * Math.sin(k * 0.43 + 1) + 0.7 * (E6[k] - 0.4);
+      const respH = (j) => 14 + 92 * (0.35 + 0.65 * Math.abs(Math.sin(j * 0.61 + 0.4) * Math.cos(j * 0.27)));
+      function drawViz6(t) {
+        c6.clearRect(0, 0, 1540, 520);
+        if (P.a6 <= 0.001) return;
+        const now = clamp((t - T6 - 0.06) / SPAN, 0, 1.02) * K, xNow = now * PITCH;
+        c6.globalAlpha = P.a6 * 0.14; c6.fillStyle = "#ffffff";
+        [60, 260, 460].forEach((y) => c6.fillRect(0, y, 1540, 1));
+        if (now > 0 && now < K) { c6.globalAlpha = P.a6 * 0.3; c6.fillStyle = "#bfe0ff"; c6.fillRect(xNow, 0, 1.5, 520); }
+        for (let k = 0; k < K; k++) {                                    // row 1: audio frames
+          const g = clamp((t - arrive(k)) / 0.14, 0, 1); if (g <= 0) continue;
+          const h = (6 + 104 * Math.pow(E6[k], 0.7)) * g, fresh = clamp(1 - (now - k) / 7, 0, 1);
+          c6.globalAlpha = P.a6 * (0.38 + 0.62 * fresh); c6.fillStyle = "#e8f3ff"; c6.beginPath(); c6.roundRect(k * PITCH + 4, 60 - h / 2, 6, h, 3); c6.fill();
+        }
+        if (P.a62 > 0.001) {                                             // row 2: state line
+          const last = Math.min(K - 1, Math.floor(now)); c6.globalAlpha = P.a62; c6.strokeStyle = "#8ec5ff"; c6.lineWidth = 3; c6.lineJoin = "round"; c6.beginPath();
+          for (let k = 0; k <= last; k++) { const x = k * PITCH + 7, y = 260 - stateV(k) * 78; if (k === 0) c6.moveTo(x, y); else c6.lineTo(x, y); }
+          c6.stroke();
+          if (last >= 0 && now < K) { const x = last * PITCH + 7, y = 260 - stateV(last) * 78; c6.globalAlpha = P.a62 * 0.25; c6.fillStyle = "#8ec5ff"; c6.beginPath(); c6.arc(x, y, 16, 0, 6.2832); c6.fill(); c6.globalAlpha = P.a62; c6.fillStyle = "#e8f3ff"; c6.beginPath(); c6.arc(x, y, 6, 0, 6.2832); c6.fill(); }
+        }
+        if (P.a63 > 0.001) {                                             // row 3: response, starts before the input ends
+          for (let k = 0; k < K; k++) {
+            const ta = Math.max(arrive(k), TR) + 0.1; if (arrive(k) + 0.1 < TR) continue;
+            const g = clamp((t - ta) / 0.2, 0, 1); if (g <= 0) continue;
+            const h = respH(k) * g; c6.globalAlpha = P.a63 * 0.95; c6.fillStyle = "#3d7bff"; c6.beginPath(); c6.roundRect(k * PITCH + 4, 460 - h / 2, 6, h, 3); c6.fill();
+          }
+        }
+        c6.globalAlpha = 1;
+      }
+
+      function draw() {
+        bg.draw(P.t, P.int); drawVoice(P.t); drawCam(P.t); drawViz5(P.t); drawViz6(P.t);
+      }
+      tl.to(P, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: draw }, 0);
+      tl.fromTo(P, { int: 0 }, { int: 0.42, duration: 4.0, ease: "power1.out", onUpdate: draw }, 0.2);
+      tl.to(P, { int: 0.5, duration: 2.6, ease: "sine.inOut", onUpdate: draw }, 5.8);
+      tl.to(P, { int: 0.5, duration: 3.0, ease: "sine.inOut", onUpdate: draw }, 15.8);
+      tl.to(P, { int: 0.9, duration: 1.6, ease: "sine.inOut", onUpdate: draw }, 27.6);
+      tl.to(P, { int: 0.55, duration: 2.4, ease: "sine.inOut", onUpdate: draw }, 30.4);
+      tl.to(P, { int: 0.72, duration: 3.0, ease: "sine.inOut", onUpdate: draw }, 36.0);
+      tl.to(P, { int: 0.0, duration: 1.5, ease: "power2.in", onUpdate: draw }, 45.2);
+      draw();
+
+      /* ---------- helpers ---------- */
+      function maskWords(host, words, opts) {
+        opts = opts || {};
+        return words.map((o) => { const m = mk("mw"), i = mk("mi", o.w + " "); if (opts.cls && opts.cls(o.w)) i.className += " " + opts.cls(o.w); m.append(i); host.append(m); tl.set(i, { yPercent: 108 }, 0); tl.to(i, { yPercent: 0, duration: opts.dur || 0.85, ease: "expo.out" }, Math.max(0.1, o.t - 0.04)); return i; });
+      }
+      const maskPlain = (host, text, t, step, dur) => text.split(" ").map((w, k) => { const m = mk("mw"), i = mk("mi", w + " "); m.append(i); host.append(m); tl.set(i, { yPercent: 108 }, 0); tl.to(i, { yPercent: 0, duration: dur || 0.85, ease: "expo.out" }, t + k * (step || 0.07)); return i; });
+      const out = (el, t, dur) => tl.to(el, { opacity: 0, y: -40, filter: "blur(12px)", duration: dur || 0.7, ease: "power3.in" }, t);
+
+      function build() {
+        tl.fromTo("#brand", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.9, ease: "expo.out" }, 0.9);
+        tl.to("#brand", { opacity: 0, duration: 0.5 }, 45.0);
+        tl.to("#voice", { opacity: 1, duration: 0.8 }, 0.9); tl.to("#voice", { opacity: 0, duration: 0.5 }, 44.7);
+
+        /* ---------- scene 1: the addition problem ---------- */
+        const a1 = seg("n1", 0.06, 2.95, "Most voice agents do not have a latency problem."), b1 = seg("n1", 3.185, 4.64, "They have an addition problem.");
+        maskWords($("#l1"), a1.slice(0, 5)); maskWords($("#l2"), a1.slice(5));
+        maskWords($("#l3"), b1, { cls: (w) => (w === "addition" ? "hl" : ""), dur: 1.0 });
+        tl.to(["#l1", "#l2"], { opacity: 0.3, duration: 0.8, ease: "power2.out" }, NS.n1 + 3.15);
+        out("#s1", 5.55);
+
+        /* ---------- scene 2: four stages, one growing delay ---------- */
+        const STG = [["Transcription", 0.06, 0.99, 200], ["Inference", 1.22, 1.93, 330], ["Tool execution", 2.19, 3.33, 170], ["Speech generation", 3.58, 4.86, 220]];
+        let off = 0; const offs = [];
+        STG.forEach(([name, s, e, w], i) => {
+          const row = mk("r2", "", "div"); row.style.top = 210 + i * 128 + "px";
+          const lb = mk("lb", "", "div"), hr = mk("hr", "", "div"); row.append(lb, hr); $("#s2").append(row);
+          const t0 = NS.n2 + s; maskWords(lb, [{ w: name, t: t0 }], { dur: 0.9 });
+          tl.to(hr, { scaleX: 1, duration: 0.9, ease: "expo.out" }, t0);
+          const bar = mk("bar2", "", "div"); bar.style.left = 790 + off + "px"; bar.style.width = w + "px"; bar.style.top = 210 + i * 128 + 35 + "px"; $("#s2").append(bar);
+          tl.to(bar, { scaleX: 1, duration: Math.max(0.7, e - s), ease: "expo.out" }, t0 + 0.05);
+          offs.push(off); off += w;
+        });
+        for (let i = 1; i < 4; i++) {                                    // the hand-off between stages
+          const c = mk("conn", "", "div"); c.style.left = 790 + offs[i] + "px"; c.style.top = 210 + (i - 1) * 128 + 65 + "px"; c.style.height = 98 + "px"; $("#s2").append(c);
+          tl.to(c, { scaleY: 1, duration: 0.6, ease: "expo.out" }, NS.n2 + 5.35 + i * 0.28);
+        }
+        const tot = mk("", "", "div"); tot.id = "tot"; $("#s2").append(tot); const tc = mk("cap", "", "div"); tot.append(tc); maskWords(tc, [{ w: "Total delay", t: NS.n2 + 7.45 }], {});
+        const tdiv = mk("", "", "div"); tdiv.id = "tdiv"; const tbar = mk("", "", "div"); tbar.id = "tbar"; $("#s2").append(tdiv, tbar);
+        tl.to(tdiv, { scaleX: 1, duration: 0.9, ease: "expo.out" }, NS.n2 + 7.4);
+        tl.to(tbar, { scaleX: 1, duration: 1.5, ease: "expo.inOut" }, NS.n2 + 7.9);
+        out("#s2", 15.8);
+
+        /* ---------- scene 3: turn detection, bolted on ---------- */
+        const names = ["Transcription", "Inference", "Tool execution", "Speech generation"], s3 = [];
+        names.forEach((n, i) => { const e = mk("st", n, "div"); e.style.top = 330 + i * 80 + "px"; $("#s3").append(e); s3.push(e); tl.fromTo(e, { opacity: 0, y: 20, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, NS.n3 + 0.1 + i * 0.12); });
+        const td = mk("st", "", "div"); td.id = "td"; td.style.top = "250px"; const tdl = mk("", "Turn detection"); td.append(tdl, xIcon()); $("#s3").append(td);
+        tl.fromTo(td, { opacity: 0, y: -110, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, ease: "expo.out" }, NS.n3 + 1.2);
+        const A = seg("n3", 2.486, 3.556, "A separate model,"), B = seg("n3", 3.769, 5.525, "guessing when you stopped speaking.");
+        const aw = maskWords($("#a3"), A, {}); aw.forEach((e) => { e.style.color = "rgba(243,245,244,0.5)"; }); const bw = maskWords($("#a3"), B, {});
+        tl.to("#a3", { opacity: 0, y: -30, filter: "blur(10px)", duration: 0.6, ease: "power3.in" }, NS.n3 + 5.5);
+        const LIST = [["Interruptions", 5.759], ["Pauses", 7.085], ["Background speech", 7.945]];
+        LIST.forEach(([n, s], i) => {
+          const it = mk("it", "", "div"); it.style.top = 250 + i * 128 + "px"; const t = mk("t", "", "div"), hr = mk("hr", "", "div"), x = xIcon(); it.append(t, x, hr); $("#s3").append(it);
+          maskWords(t, [{ w: n, t: NS.n3 + s }], {}); tl.to(hr, { scaleX: 1, duration: 0.9, ease: "expo.out" }, NS.n3 + s); tl.to(x, { opacity: 1, duration: 0.5 }, NS.n3 + s + 0.45);
+        });
+        maskWords($("#wrong"), seg("n3", 9.405, 10.85, "Another place to be wrong."), {});
+        tl.to("#td", { borderColor: "#ff7a9c", backgroundColor: "rgba(255,122,156,0.10)", duration: 0.6 }, NS.n3 + 10.3);
+        tl.to(tdl, { color: "#ff7a9c", duration: 0.6 }, NS.n3 + 10.3); tl.to("#td svg", { opacity: 1, duration: 0.6 }, NS.n3 + 10.3);
+        out("#s3", 27.05);
+
+        /* ---------- scene 4: Hydra removes the stack ---------- */
+        maskWords($("#h1"), seg("n4", 0.06, 0.52, "Hydra"), { dur: 1.1 }); maskWords($("#h2"), seg("n4", 0.52, 1.39, "removes the stack."), { dur: 1.0 });
+        out("#s4", 30.1);
+
+        /* ---------- scene 5: audio in, audio out ---------- */
+        maskWords($("#n1"), seg("n5", 0.06, 1.212, "It is speech-native."), { dur: 1.0 });
+        tl.to("#ioa", { opacity: 1, duration: 0.6 }, NS.n5 + 1.4); tl.to("#iob", { opacity: 1, duration: 0.6 }, NS.n5 + 2.34);
+        tl.to("#viz5", { opacity: 1, duration: 0.5 }, NS.n5 + 1.4);
+        tl.to(P, { a5: 1, duration: 0.8, ease: "power2.out", onUpdate: draw }, NS.n5 + 1.4);
+        const gT = seg("n5", 3.3885, 5.25, "with no intermediate transcript.")[3].t;
+        tl.to("#ghost", { opacity: 0.85, duration: 0.5 }, gT - 0.25); tl.to("#ghost i", { scaleX: 1, duration: 0.5, ease: "expo.out" }, gT + 0.2);
+        tl.to("#ghost", { opacity: 0.4, duration: 0.6 }, gT + 0.8);
+        out("#s5", 36.0);
+
+        /* ---------- scene 6: frames, state, response ---------- */
+        tl.to("#viz6", { opacity: 1, duration: 0.5 }, 36.5); tl.to(P, { a6: 1, duration: 0.7, onUpdate: draw }, 36.5);
+        tl.to("#rl1", { opacity: 0.8, duration: 0.5 }, NS.n6 + 0.06);
+        tl.to("#rl2", { opacity: 0.8, duration: 0.5 }, NS.n6 + 2.0); tl.to(P, { a62: 1, duration: 0.6, onUpdate: draw }, NS.n6 + 2.0);
+        tl.to("#rl3", { opacity: 0.8, duration: 0.5 }, TR - 0.1); tl.to(P, { a63: 1, duration: 0.4, onUpdate: draw }, TR - 0.1);
+        out("#s6", 44.85);
+
+        tl.fromTo("#endlogo", { opacity: 0, filter: "blur(14px)", y: 20 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.0, ease: "expo.out" }, 45.7);
+
+        window.__timelines["main"] = tl; tl.seek(0);
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/audio/transcript2.js"></script>
+    <style>
+      @font-face { font-family: "Aeonik"; font-weight: 400; src: url("assets/fonts/aeonikpro-regular.otf") format("opentype"); }
+      @font-face { font-family: "Aeonik"; font-weight: 500; src: url("assets/fonts/aeonikpro-medium.otf") format("opentype"); }
+
+      :root {
+        --night: #050607;
+        --ink: #f3f5f4;
+        --ink-dim: rgba(243, 245, 244, 0.55);
+        --hi: #8ec5ff;
+        --card-bg: linear-gradient(160deg, rgba(14, 20, 40, 0.62), rgba(8, 12, 26, 0.5));
+        --card-edge: rgba(255, 255, 255, 0.16);
+        --card-shadow: 0 40px 100px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+        --card-blur: blur(26px);
+        --past: 0.30;
+        --mask-from: transparent;
+      }
+      :root.light {
+        --ink: #0b1124;
+        --ink-dim: rgba(11, 17, 36, 0.48);
+        --hi: #1f5fe0;
+        --card-bg: #ffffff;
+        --card-edge: rgba(255, 255, 255, 0);
+        --card-shadow: 0 40px 110px rgba(0, 0, 0, 0.5);
+        --card-blur: none;
+        --past: 0.28;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--night); }
+      body { font-family: "Aeonik", sans-serif; font-weight: 400; color: var(--ink); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--night); }
+      .fill { position: absolute; inset: 0; }
+
+      /* ---------- camera stage: photo + call screen move together ---------- */
+      #stage, #stage2 { position: absolute; inset: 0; transform-origin: 28% 50%; will-change: transform; }
+      #photo { position: absolute; left: -5px; top: 0; height: 1080px; width: auto; display: block; }
+
+      /* iPhone call screen fitted on the glass: centre 547,518 · 385x737 · rotated -8.86deg */
+      #scr { position: absolute; left: 0; top: 0; width: 385px; height: 737px; transform: matrix3d(0.9454734,-0.11591626,0.0,3.929e-05,0.10567187,0.89167723,0.0,-0.00010625,0.0,0.0,1.0,0.0,302.8041687,183.55810547,0.0,1.0); transform-origin: 0 0;
+             border-radius: 48px; overflow: hidden; color: #fff; font-family: "Aeonik", sans-serif; box-shadow: inset 0 0 0 5px #04060b, 0 0 0 3px #04060b;
+             background:
+               radial-gradient(130% 62% at 100% 0%, #1a3b9c 0%, rgba(26,59,156,0) 62%),
+               radial-gradient(90% 40% at 0% 45%, rgba(86,150,160,0.55) 0%, rgba(86,150,160,0) 70%),
+               linear-gradient(172deg, #4a7f93 0%, #2b7090 34%, #0f5a98 70%, #095d88 100%); }
+      #scr .abs { position: absolute; }
+      #isl { left: 135px; top: 23px; width: 114px; height: 32px; background: #000; border-radius: 17px; }
+      #dot { left: 207px; top: 35px; width: 7px; height: 7px; border-radius: 50%; background: #ff9f0a; }
+      #clock { left: 62px; top: 28px; font-size: 18px; font-weight: 500; line-height: 20px; letter-spacing: -0.01em; }
+      #sig { left: 269px; top: 31px; } #wifi { left: 292px; top: 31px; } #bat { left: 316px; top: 31px; }
+      #tm { left: 0; right: 0; top: 106px; text-align: center; font-size: 18px; line-height: 22px; opacity: 0.72; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+      #nm { left: 0; right: 0; top: 130px; text-align: center; font-size: 31px; line-height: 36px; font-weight: 500; letter-spacing: -0.02em; }
+      .cb { width: 69px; height: 69px; border-radius: 50%; background: rgba(255,255,255,0.17); border: 1px solid rgba(255,255,255,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; }
+      .cb.end { background: #d62323; border-color: rgba(255,255,255,0.18); }
+      .cb svg { width: 30px; height: 30px; }
+      .cl { width: 100px; text-align: center; font-size: 13.5px; line-height: 16px; opacity: 0.95; }
+      #glare { position: absolute; left: 0; top: 0; width: 385px; height: 737px; transform: matrix3d(0.9454734,-0.11591626,0.0,3.929e-05,0.10567187,0.89167723,0.0,-0.00010625,0.0,0.0,1.0,0.0,302.8041687,183.55810547,0.0,1.0); transform-origin: 0 0; border-radius: 48px; overflow: hidden; pointer-events: none;
+               box-shadow: inset 0 0 0 5px #04060b, inset 0 0 26px rgba(0,0,0,0.38), inset 0 0 0 6px rgba(255,255,255,0.06);
+               background: linear-gradient(112deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.07) 20%, rgba(255,255,255,0) 38%), linear-gradient(112deg, rgba(255,255,255,0) 52%, rgba(255,255,255,0.05) 58%, rgba(255,255,255,0) 66%), linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0) 30%); }
+
+      #vignette { background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.5) 100%); pointer-events: none; }
+      #grain { background-image: url("assets/grain.png"); background-size: 512px 512px; mix-blend-mode: overlay; opacity: 0.24; pointer-events: none; }
+      #black { background: #000; opacity: 1; pointer-events: none; }
+
+      /* ---------- transcript: one quiet card ---------- */
+      #card { position: absolute; left: 960px; top: 130px; width: 860px; height: 820px; overflow: hidden; border-radius: 28px;
+              background: var(--card-bg); border: 1.5px solid var(--card-edge); backdrop-filter: var(--card-blur); box-shadow: var(--card-shadow); }
+      #clip { position: absolute; inset: 0; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 15%, #000 100%); mask-image: linear-gradient(180deg, transparent 0, #000 15%, #000 100%); }
+      #feed { position: absolute; left: 68px; right: 68px; top: 0; }
+      .blk { margin-bottom: 52px; }
+      .lab { font-weight: 500; font-size: 21px; line-height: 1; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 16px; }
+      .lab.agent { color: var(--hi); }
+      .tx { font-size: 43px; line-height: 1.5; letter-spacing: -0.012em; }
+      .tx .w { display: inline-block; white-space: pre; vertical-align: top; }
+      .tx .w.term, .tx .fin.id { color: var(--hi); font-weight: 500; }
+      .tx .fin.amt { font-weight: 500; }
+      .tx .grp .raw { display: none; }
+      .tx .grp .fin { display: inline-block; white-space: pre; position: relative; vertical-align: top; }
+      .tx .fin sup { position: absolute; left: 0; top: -14px; font-size: 15px; font-weight: 500; letter-spacing: 0.06em; color: var(--hi); opacity: 0.85; line-height: 1; }
+
+      #logo-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+      #logo-wrap img { width: 760px; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="112.8" data-width="1920" data-height="1080">
+
+      <audio id="call" src="assets/audio/call_v2.mp3" data-start="2" data-duration="105.46" data-track-index="9" data-volume="1"></audio>
+
+      <div id="stage"><img id="photo" src="assets/gen/phone.png" alt="" /></div>
+      <div id="grain" class="fill clip" data-start="0" data-duration="112.8" data-track-index="3"></div>
+      <div id="stage2">
+        <div id="scr">
+          <div id="isl" class="abs"></div><div id="dot" class="abs"></div>
+          <div id="clock" class="abs">9:41</div>
+          <svg id="sig" class="abs" width="19" height="13" viewBox="0 0 19 13" fill="#fff"><rect x="0" y="8" width="3.2" height="5" rx="1"/><rect x="5.3" y="5.5" width="3.2" height="7.5" rx="1"/><rect x="10.6" y="3" width="3.2" height="10" rx="1"/><rect x="15.8" y="0" width="3.2" height="13" rx="1"/></svg>
+          <svg id="wifi" class="abs" width="18" height="13" viewBox="0 0 18 13" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M1.5 4.6a10.5 10.5 0 0115 0"/><path d="M4.4 7.6a6.3 6.3 0 019.2 0"/><circle cx="9" cy="11" r="1.2" fill="#fff" stroke="none"/></svg>
+          <svg id="bat" class="abs" width="29" height="14" viewBox="0 0 29 14" fill="none"><rect x="0.8" y="0.8" width="24" height="12.4" rx="3.6" stroke="#fff" stroke-opacity="0.5" stroke-width="1.4"/><rect x="2.6" y="2.6" width="20.4" height="8.8" rx="2.4" fill="#fff"/><rect x="26.4" y="4.6" width="2" height="4.8" rx="1" fill="#fff" fill-opacity="0.5"/></svg>
+          <div id="tm" class="abs">calling…</div>
+          <div id="nm" class="abs">Meridian Bank</div>
+
+          <div class="abs cb" style="left:52px;top:489.5px"><svg viewBox="0 0 30 30" fill="#fff"><path d="M4 11h4.5L14 6.5v17L8.5 19H4z"/><path d="M17.5 10.5a6 6 0 010 9M20.5 7.5a10 10 0 010 15" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg></div>
+          <div class="abs cb" style="left:158px;top:489.5px;opacity:.55"><svg viewBox="0 0 30 30" fill="#fff"><rect x="3" y="8" width="17" height="14" rx="3.5"/><path d="M22 12.5l5-3v11l-5-3z"/></svg></div>
+          <div class="abs cb" style="left:264px;top:489.5px"><svg viewBox="0 0 30 30" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><rect x="11" y="4" width="8" height="14" rx="4"/><path d="M7 14a8 8 0 0016 0M15 22v4M5 5l20 20"/></svg></div>
+          <div class="abs cl" style="left:36.5px;top:560px">Speaker</div>
+          <div class="abs cl" style="left:142.5px;top:560px">FaceTime</div>
+          <div class="abs cl" style="left:248.5px;top:560px">Mute</div>
+
+          <div class="abs cb" style="left:52px;top:593.5px"><svg viewBox="0 0 30 30" fill="#fff"><circle cx="6" cy="15" r="2.3"/><circle cx="15" cy="15" r="2.3"/><circle cx="24" cy="15" r="2.3"/></svg></div>
+          <div class="abs cb end" style="left:158px;top:593.5px"><svg viewBox="0 0 30 30" fill="#fff"><path d="M3.5 17.5c6-5.4 17-5.4 23 0 .8.8.9 2.1.1 3l-2 2.2c-.7.7-1.7.9-2.6.4l-3-1.6c-.7-.4-1.1-1.1-1-1.9l.1-1.6c-2.3-.7-4.7-.7-7 0l.1 1.6c.1.8-.3 1.5-1 1.9l-3 1.6c-.9.5-1.9.3-2.6-.4l-2-2.2c-.8-.9-.7-2.2.1-3z"/></svg></div>
+          <div class="abs cb" style="left:264px;top:593.5px"><svg viewBox="0 0 30 30" fill="#fff"><g><circle cx="7" cy="7" r="2.1"/><circle cx="15" cy="7" r="2.1"/><circle cx="23" cy="7" r="2.1"/><circle cx="7" cy="15" r="2.1"/><circle cx="15" cy="15" r="2.1"/><circle cx="23" cy="15" r="2.1"/><circle cx="7" cy="23" r="2.1"/><circle cx="15" cy="23" r="2.1"/><circle cx="23" cy="23" r="2.1"/></g></svg></div>
+          <div class="abs cl" style="left:36.5px;top:664px">More</div>
+          <div class="abs cl" style="left:142.5px;top:664px">End</div>
+          <div class="abs cl" style="left:248.5px;top:664px">Keypad</div>
+        </div>
+        <div id="glare"></div>
+      </div>
+
+      <div id="vignette" class="fill clip" data-start="0" data-duration="112.8" data-track-index="2"></div>
+
+      <div id="card" class="clip" data-start="0" data-duration="112.8" data-track-index="4"><div id="clip"><div id="feed"></div></div></div>
+
+      <div id="black" class="fill clip" data-start="0" data-duration="112.8" data-track-index="5"></div>
+      <div id="logo-wrap" class="clip" data-start="109.6" data-duration="3.2" data-track-index="6"><img id="logo" src="assets/logo.png" alt="smallest.ai" /></div>
+    </div>
+
+    <script>
+      const THEME = "light"; // "dark" | "light"
+      if (THEME === "light") document.documentElement.classList.add("light");
+
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const OFF = 2.0;                       // film time of call time 0 (phone timer starts here)
+      const TOTAL = 112.8, CALL_END = OFF + 105.46;
+      const TR = window.TRANSCRIPT, PAST = THEME === "light" ? 0.28 : 0.30, HI = THEME === "light" ? "#1f5fe0" : "#8ec5ff";
+      const mk = (cls, text, tag) => { const e = document.createElement(tag || "span"); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+
+      /* ---------- natural handheld: slow drift, breathing, a hint of tremor (kept small) ---------- */
+      const P = { t: 0 };
+      const S2 = (t, f, ph) => Math.sin(2 * Math.PI * f * t + ph);
+      function cam(t) {
+        const x = 2.0 * S2(t, 0.29, 0.7) + 1.2 * S2(t, 0.77, 2.1) + 0.5 * S2(t, 1.9, 4.0) + 0.2 * S2(t, 7.1, 1.3);
+        const y = 1.7 * S2(t, 0.23, 1.9) + 1.1 * S2(t, 0.91, 0.3) + 0.45 * S2(t, 2.3, 2.2) + 0.2 * S2(t, 8.3, 0.4);
+        const r = 0.095 * S2(t, 0.21, 0.4) + 0.055 * S2(t, 0.67, 1.9) + 0.02 * S2(t, 5.3, 0.6);
+        const rx = 0.12 * S2(t, 0.27, 2.2) + 0.03 * S2(t, 1.3, 0.8), ry = 0.15 * S2(t, 0.19, 0.9) + 0.04 * S2(t, 1.1, 2.5);
+        const sc = 1.035 + 0.004 * S2(t, 0.17, 0.2) + 0.045 * Math.min(1, t / 105);
+        const tf = "perspective(1800px) translate3d(" + x.toFixed(2) + "px," + y.toFixed(2) + "px,0) rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg) rotateZ(" + r.toFixed(3) + "deg) scale(" + sc.toFixed(4) + ")";
+        $("#stage").style.transform = tf; $("#stage2").style.transform = tf;
+      }
+      const pad = (n) => String(n).padStart(2, "0");
+      let lastTm = "";
+      function drawCall(t) {
+        const c = t - OFF;
+        const txt = c < 0 ? "calling…" : t >= CALL_END ? "Call Ended" : pad(Math.floor(c / 60)) + ":" + pad(Math.floor(c % 60));
+        if (txt !== lastTm) { $("#tm").textContent = txt; lastTm = txt; }
+      }
+      const frame = (t) => { cam(t); drawCall(t); };
+      tl.to(P, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: () => frame(P.t) }, 0);
+      frame(0);
+
+      /* ---------- transcript ---------- */
+      const feed = $("#feed"), blocks = [];
+      TR.turns.forEach((u) => {
+        const blk = mk("blk", "", "div"), lab = mk("lab" + (u.sp === 0 ? " agent" : ""), TR.speakers[u.sp], "div"), tx = mk("tx", "", "div");
+        const reveals = [], dimEls = [], merges = [];
+        u.items.forEach((it) => {
+          if (it.g) {
+            const grp = mk("grp"), raw = mk("raw"), fin = mk("fin " + it.kind, it.fin);
+            const rawWords = it.raw.map((r) => { const w = mk("w", r.t + " "); raw.append(w); return { el: w, s: r.s }; });
+            grp.append(raw, fin); tx.append(grp); tx.append(document.createTextNode(" "));
+            merges.push({ raw, fin, rawWords, e: it.e });
+            dimEls.push(...rawWords.map((r) => r.el), fin);
+          } else {
+            const w = mk("w" + (it.term ? " term" : ""), it.t + " "); tx.append(w); reveals.push({ el: w, s: it.s }); dimEls.push(w);
+          }
+        });
+        blk.append(lab, tx); feed.append(blk);
+        blocks.push({ blk, lab, tx, reveals, merges, dimEls, u });
+      });
+
+      function build() {
+        const H = 820, bottomGap = 120, PAD = 150;
+        tl.fromTo("#black", { opacity: 1 }, { opacity: 0, duration: 1.1, ease: "power2.out" }, 0.05);
+        tl.fromTo("#card", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 1.0, ease: "expo.out" }, 1.4);
+
+        // natural widths for the fold/grow morph
+        blocks.forEach((b) => b.merges.forEach((m) => {
+          m.finW = m.fin.getBoundingClientRect().width;
+          m.raw.style.display = "inline";
+          m.rawWords.forEach((r) => { r.w = r.el.getBoundingClientRect().width; });
+          m.raw.style.display = "";
+        }));
+        blocks.forEach((b) => {
+          if (!b.merges.length) return;
+          b.hFin = b.tx.getBoundingClientRect().height;
+          b.merges.forEach((m) => { m.raw.style.display = "inline"; m.fin.style.display = "none"; });
+          b.hRaw = b.tx.getBoundingClientRect().height;
+          b.merges.forEach((m) => { m.raw.style.display = ""; m.fin.style.display = ""; });
+        });
+        const ys = blocks.map((b) => Math.min(PAD, H - bottomGap - (b.blk.offsetTop + b.blk.offsetHeight)));   // measured with merged (final) layout
+        tl.set(feed, { y: PAD }, 0);
+        blocks.forEach((b, k) => {
+          const t0 = b.u.start + OFF;
+          tl.set(b.blk, { opacity: 0 }, 0);
+          tl.to(b.blk, { opacity: 1, duration: 0.35, ease: "power2.out" }, t0 - 0.25);
+          tl.to(feed, { y: ys[k], duration: 0.9, ease: "expo.out" }, Math.max(1.6, t0 - 0.3));
+          if (k > 0) tl.to([blocks[k - 1].lab, blocks[k - 1].dimEls], { opacity: PAST, duration: 0.7, ease: "power2.out" }, t0 - 0.1);
+          if (k > 2) tl.set(blocks[k - 3].blk, { opacity: 0 }, t0 + 0.6);
+          // plain words appear as they are spoken
+          b.reveals.forEach(({ el, s }) => tl.fromTo(el, { opacity: 0, y: 7 }, { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }, s + OFF - 0.04));
+          // spoken sequences appear word by word, then turn blue, fold together and grow into one written token
+          b.merges.forEach((m) => {
+            tl.set(m.raw, { display: "inline" }, 0);
+            tl.set(m.fin, { width: 0, opacity: 0, overflow: "hidden", filter: "blur(6px)" }, 0);
+            m.rawWords.forEach(({ el, s, w }) => {
+              tl.set(el, { width: w, overflow: "hidden" }, 0);
+              tl.fromTo(el, { opacity: 0, y: 7 }, { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }, s + OFF - 0.04);
+            });
+            const tm = m.e + OFF + 0.32, n = m.rawWords.length;
+            if (m.kind === "id") tl.to(m.rawWords.map((r) => r.el), { color: HI, duration: 0.35, ease: "power1.inOut" }, tm - 0.05);
+            m.rawWords.forEach(({ el }, i) => tl.to(el, { width: 0, opacity: 0, filter: "blur(5px)", duration: 0.55, ease: "power3.inOut" }, tm + 0.1 + (i / Math.max(1, n - 1)) * 0.18));
+            tl.to(m.fin, { width: m.finW, opacity: 1, filter: "blur(0px)", duration: 0.7, ease: "power3.inOut" }, tm + 0.12);
+            tl.set(m.fin, { width: "auto", overflow: "visible" }, tm + 0.84);
+            tl.set(m.raw, { display: "none" }, tm + 0.9);
+          });
+          if (b.merges.length) {
+            const last = b.merges[b.merges.length - 1], tl_ = last.e + OFF + 0.32;
+            tl.set(b.tx, { height: b.hRaw }, 0);
+            tl.to(b.tx, { height: b.hFin, duration: 0.8, ease: "power3.inOut" }, tl_ + 0.15);
+            tl.set(b.tx, { height: "auto" }, tl_ + 1.0);
+          }
+        });
+        blocks.forEach((b) => tl.set(b.blk, { opacity: 0 }, 0));
+
+        // outro
+        tl.to("#card", { opacity: 0, y: -40, duration: 0.8, ease: "power3.in" }, CALL_END + 0.2);
+        tl.to("#black", { opacity: 1, duration: 1.1, ease: "power2.inOut" }, 108.4);
+        tl.fromTo("#logo-wrap", { opacity: 0, filter: "blur(16px)", y: 30, scale: 0.97 }, { opacity: 1, filter: "blur(0px)", y: 0, scale: 1, duration: 1.1, ease: "expo.out" }, 109.9);
+        window.__timelines["main"] = tl;
+        tl.seek(0);
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

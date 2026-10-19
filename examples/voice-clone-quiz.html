@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/audio/lines.js"></script>
+    <style>
+      @font-face { font-family: "Aeonik"; font-weight: 400; src: url("assets/fonts/aeonikpro-regular.otf") format("opentype"); }
+      @font-face { font-family: "Aeonik"; font-weight: 500; src: url("assets/fonts/aeonikpro-medium.otf") format("opentype"); }
+
+      :root { --paper: #ffffff; --ink: #0b1124; --dim: rgba(11,17,36,0.26); --label: #7d88a3; --blue: #1f5fe0; --sky: #7db4ff; --night: #050607; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: "Aeonik", sans-serif; font-weight: 400; color: var(--ink); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
+      .fill { position: absolute; inset: 0; }
+      #bg canvas { width: 1920px; height: 1080px; display: block; }
+      #grain { background-image: url("assets/grain.png"); background-size: 512px 512px; mix-blend-mode: multiply; opacity: 0.0; pointer-events: none; }
+
+      #brand { position: absolute; left: 72px; top: 58px; width: 196px; height: auto; display: block; opacity: 0; }
+      #title { position: absolute; left: 0; right: 0; top: 0; height: 120px; text-align: center; font-weight: 500; font-size: 76px; letter-spacing: -0.03em; line-height: 120px; white-space: nowrap; }
+      .col { position: absolute; top: 450px; width: 560px; margin-left: -280px; display: flex; flex-direction: column; align-items: center; }
+      .glow { position: absolute; left: 50%; top: 95px; width: 620px; height: 330px; margin-left: -310px; margin-top: -165px; background: radial-gradient(closest-side, rgba(31,95,224,0.20), rgba(31,95,224,0)); opacity: 0; }
+      .wave { position: relative; height: 190px; width: 560px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      .wave i { display: block; width: 5px; border-radius: 3px; background: #c9d3ea; height: 5px; flex: none; }
+      .lbl { margin-top: 34px; font-weight: 500; font-size: 22px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--label); height: 30px; position: relative; width: 560px; text-align: center; padding-left: 0.34em; }
+      .lbl span { position: absolute; left: 0; right: 0; top: 0; }
+      #capwrap { position: absolute; left: 260px; right: 260px; top: 780px; height: 160px; }
+      .cap { position: absolute; left: 0; right: 0; top: 0; text-align: center; font-size: 44px; line-height: 1.4; letter-spacing: -0.015em; opacity: 0; }
+      .cap .w { display: inline-block; white-space: pre; color: var(--dim); }
+      #reveal { position: absolute; left: 0; right: 0; top: 790px; text-align: center; font-size: 44px; line-height: 1.45; letter-spacing: -0.015em; opacity: 0; }
+      #reveal b { font-weight: 500; color: var(--blue); }
+
+      /* black end card */
+      #black { background: var(--night); clip-path: inset(100% 0 0 0); }
+      #endtxt { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #f3f5f4; opacity: 0; }
+      #endtxt .a, #endtxt .b { font-size: 104px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.06; }
+      #endtxt .b { color: var(--sky); }
+      #logo-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+      #logo-wrap img { width: 720px; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="38.5" data-width="1920" data-height="1080">
+
+      <audio id="ln1" src="assets/audio/v2/t1_A.wav" data-start="2.4"   data-duration="1.52" data-track-index="10" data-volume="1"></audio>
+      <audio id="ln2" src="assets/audio/v2/t2_B.wav" data-start="4.5"   data-duration="2.52" data-track-index="11" data-volume="1"></audio>
+      <audio id="ln3" src="assets/audio/v2/t3_A.wav" data-start="7.6"   data-duration="3.32" data-track-index="12" data-volume="1"></audio>
+      <audio id="ln4" src="assets/audio/v2/t4_B.wav" data-start="11.5"  data-duration="3.69" data-track-index="13" data-volume="1"></audio>
+      <audio id="ln5" src="assets/audio/v2/t5_A.wav" data-start="15.77" data-duration="3.4"  data-track-index="14" data-volume="1"></audio>
+      <audio id="ln6" src="assets/audio/v2/t6_B.wav" data-start="19.75" data-duration="2.64" data-track-index="15" data-volume="1"></audio>
+
+      <div id="bg" class="fill clip" data-start="0" data-duration="38.5" data-track-index="0"><canvas id="mesh" width="960" height="540"></canvas></div>
+      <div id="grain" class="fill clip" data-start="0" data-duration="38.5" data-track-index="1"></div>
+
+      <div id="ui" class="fill clip" data-start="0" data-duration="38.5" data-track-index="3">
+        <img id="brand" src="assets/logo_black.png" alt="smallest.ai" />
+        <div id="title">Which voice is the real one?</div>
+        <div class="col" id="colA" style="left:600px"><div class="glow" id="gA"></div><div class="wave" id="waveA"></div><div class="lbl"><span id="lA1">Voice A</span><span id="lA2" style="opacity:0">Original</span></div></div>
+        <div class="col" id="colB" style="left:1320px"><div class="glow" id="gB"></div><div class="wave" id="waveB"></div><div class="lbl"><span id="lB1">Voice B</span><span id="lB2" style="opacity:0">Clone</span></div></div>
+        <div id="capwrap"></div>
+        <div id="reveal">Voice B was a <b>cloned voice</b>,<br />made from just 9 seconds of audio.</div>
+      </div>
+
+      <div id="black" class="fill clip" data-start="0" data-duration="38.5" data-track-index="4"></div>
+      <div id="endtxt" class="clip" data-start="0" data-duration="38.5" data-track-index="5"><div class="a">Clone your voice</div><div class="b">with smallest.ai</div></div>
+      <div id="logo-wrap" class="clip" data-start="0" data-duration="38.5" data-track-index="6"><img src="assets/logo.png" alt="smallest.ai" /></div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const TOTAL = 38.5, L = window.LINES;
+      const STARTS = [2.4, 4.5, 7.6, 11.5, 15.77, 19.75];
+      const mk = (cls, text, tag) => { const e = document.createElement(tag || "span"); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+
+      /* ---------- paper-white background with the brand's soft blue contours ---------- */
+      const P = { t: 0, int: 0.0 };
+      const canvas = $("#mesh"), gl = canvas.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+      const VS = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
+      const FS = `precision highp float; uniform vec2 R; uniform float T; uniform float I;
+        vec3 ramp(float v){ vec3 w=vec3(1.0,1.0,1.0); vec3 c=mix(w,vec3(0.94,0.965,1.0),smoothstep(0.12,0.40,v)); c=mix(c,vec3(0.87,0.925,1.0),smoothstep(0.34,0.55,v)); c=mix(c,vec3(0.78,0.87,1.0),smoothstep(0.55,0.90,v)); return c; }
+        void main(){ vec2 uv=gl_FragCoord.xy/R; vec2 p=(uv-0.5)*vec2(R.x/R.y,1.0)*3.4; float t=T*0.10;
+          for(int i=0;i<5;i++){ float fi=float(i); p+=0.62*vec2(sin(p.y*1.25+t*(1.0+fi*0.3)+fi*1.7),cos(p.x*1.1-t*(0.8+fi*0.25)+fi*2.3)); }
+          float a=0.5+0.5*sin(p.x*1.15+p.y*0.7+t*0.5), b=0.5+0.5*sin(length(p)*1.5-t); float v=smoothstep(0.12,0.88,0.55*a+0.45*b);
+          float edge=smoothstep(0.18,0.95,distance(uv,vec2(0.5,0.5))*1.35);
+          v*=I*(0.35+0.85*edge); gl_FragColor=vec4(ramp(clamp(v,0.0,1.0)),1.0); }`;
+      const sh = (ty, src) => { const s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+      const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const uR = gl.getUniformLocation(prog, "R"), uT = gl.getUniformLocation(prog, "T"), uI = gl.getUniformLocation(prog, "I");
+
+      /* ---------- voice spectrum: 36-band analysis of each line, mirrored around the centre ---------- */
+      const NB = 49, C = (NB - 1) / 2, bars = { A: [], B: [] };
+      ["A", "B"].forEach((v) => { const c = $("#wave" + v); for (let i = 0; i < NB; i++) { const b = document.createElement("i"); c.append(b); bars[v].push(b); } });
+      function spectrumAt(t, v) {
+        for (let k = 0; k < L.length; k++) {
+          if (L[k].v !== v) continue;
+          const d = t - STARTS[k];
+          if (d >= -0.05 && d < L[k].dur + 0.45) {
+            const f = Math.max(0, d) * 30, n = L[k].spec.length, i0 = Math.min(n - 1, Math.floor(f)), i1 = Math.min(n - 1, i0 + 1), fr = f - Math.floor(f);
+            const decay = d > L[k].dur ? Math.max(0, 1 - (d - L[k].dur) / 0.4) : 1;
+            return L[k].spec[i0].map((x, j) => (x + (L[k].spec[i1][j] - x) * fr) * decay);
+          }
+        }
+        return null;
+      }
+      function drawWaves(t) {
+        ["A", "B"].forEach((v) => {
+          const sp = spectrumAt(t, v), live = !!sp;
+          bars[v].forEach((b, i) => {
+            let e = 0;
+            if (sp) { const p = (Math.abs(i - C) / C) * 33, j = Math.floor(p), fr = p - j; e = sp[j] + ((sp[Math.min(35, j + 1)] || 0) - sp[j]) * fr; }
+            const lift = Math.pow(Math.min(1, e * 1.25), 0.85);
+            b.style.height = 5 + lift * 176 + "px";
+            b.style.background = live ? "linear-gradient(180deg, #7db4ff 0%, #1f5fe0 100%)" : "#c9d3ea";
+            b.style.opacity = live ? 0.55 + 0.45 * Math.min(1, e * 1.6) : 0.9;
+          });
+          let g = 0; if (sp) { const m = sp.reduce((a, b) => a + b, 0) / sp.length; g = Math.min(1, m * 3.2); }
+          $("#g" + v).style.opacity = g.toFixed(3);
+        });
+      }
+      function draw() {
+        gl.viewport(0, 0, canvas.width, canvas.height); gl.uniform2f(uR, canvas.width, canvas.height); gl.uniform1f(uT, P.t); gl.uniform1f(uI, P.int);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); drawWaves(P.t);
+      }
+      tl.to(P, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: draw }, 0);
+      tl.fromTo(P, { int: 0 }, { int: 1.0, duration: 3.2, ease: "power1.out", onUpdate: draw }, 0.1);
+      draw();
+
+      /* ---------- captions ---------- */
+      const wrap = $("#capwrap"), caps = [];
+      L.forEach((l, k) => {
+        const el = mk("cap", "", "div"), words = l.text.split(" ").map((w) => { const s = mk("w", w + " "); el.append(s); return s; });
+        wrap.append(el); caps.push({ el, words, l, s: STARTS[k] });
+      });
+
+      function build() {
+        tl.set("#title", { y: 440, scale: 1.15, opacity: 0 }, 0);
+        tl.to("#title", { opacity: 1, duration: 0.9, ease: "power2.out" }, 0.3);
+        tl.to("#title", { y: 130, scale: 0.78, duration: 1.1, ease: "expo.inOut" }, 1.3);
+        tl.fromTo("#brand", { opacity: 0, y: -10, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 0.5);
+        tl.set("#colA", { opacity: 0 }, 0); tl.set("#colB", { opacity: 0 }, 0);
+        ["#colA", "#colB"].forEach((id, i) => tl.fromTo(id, { opacity: 0, y: 24, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 1.9 + i * 0.12));
+
+        caps.forEach((c) => {
+          const on = c.s, off = c.s + c.l.dur + 0.06, id = "#l" + c.l.v + "1";
+          tl.fromTo(c.el, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, on - 0.12);
+          tl.to(c.el, { opacity: 0, y: -10, duration: 0.22, ease: "power2.in" }, off);
+          c.words.forEach((w, j) => tl.to(w, { color: "#0b1124", duration: 0.12, ease: "power1.out" }, on + (c.l.words[j] ? c.l.words[j].s : 0)));
+          tl.to(id, { color: "#1f5fe0", duration: 0.2 }, on - 0.05); tl.to(id, { color: "#7d88a3", duration: 0.3 }, c.s + c.l.dur + 0.2);
+        });
+
+        // reveal
+        tl.to("#lA1", { opacity: 0, duration: 0.5 }, 24.6); tl.to("#lB1", { opacity: 0, duration: 0.5 }, 24.6);
+        tl.to("#lA2", { opacity: 1, color: "#0b1124", duration: 0.6 }, 24.8); tl.to("#lB2", { opacity: 1, color: "#1f5fe0", duration: 0.6 }, 24.8);
+        tl.fromTo("#reveal", { opacity: 0, y: 16, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 25.4);
+
+        // paper -> black
+        tl.to("#ui", { opacity: 0, y: -30, duration: 0.6, ease: "power2.in" }, 29.4);
+        tl.fromTo("#black", { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.9, ease: "expo.inOut" }, 29.6);
+        tl.fromTo("#endtxt", { opacity: 0, y: 30, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 30.7);
+        tl.to("#endtxt", { opacity: 0, y: -30, filter: "blur(10px)", duration: 0.6, ease: "power3.in" }, 34.4);
+        tl.fromTo("#logo-wrap", { opacity: 0, y: 24, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, 34.9);
+
+        window.__timelines["main"] = tl; tl.seek(0);
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>
