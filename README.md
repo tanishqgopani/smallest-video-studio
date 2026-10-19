@@ -1,6 +1,6 @@
 # smallest-video-studio
 
-A Claude Code skill that makes Smallest AI videos end to end: script, narration, a HyperFrames composition, a rendered MP4 and a social caption.
+A Claude Code skill that makes Smallest AI videos end to end: script, narration, a HyperFrames composition, a rendered MP4.zz
 
 **Internal.** `assets/fonts` contains Aeonik Pro, which is licensed to Smallest. Keep this repo private.
 
