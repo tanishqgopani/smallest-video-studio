@@ -2,7 +2,7 @@
 
 A Claude Code skill that makes Smallest AI videos end to end: script, narration, a HyperFrames composition, a rendered MP4.zz
 
-**Internal.** `assets/fonts` contains Aeonik Pro, which is licensed to Smallest. Keep this repo private.
+`assets/fonts` contains Aeonik Pro, which is licensed to Smallest.
 
 ## What it does
 
